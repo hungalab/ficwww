@@ -1,0 +1,203 @@
+<!doctype html>
+<!-- Jinja2 -->
+<html>
+	<head>
+        <meta charset="utf-8">
+		<title>{{ title }}</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script type="text/javascript" src="static/js/dashboard.js"></script>
+        <link rel="stylesheet" href="/static/css/default.css">
+	</head>
+	<body>
+		<h2> Flow-in-Cloud DASHBOARD (on {{host}})</h2> 
+		<img border=0 src="/static/img/hlab.png"><br>
+		<b>WE ACCELERATE THE FUTURE.</b>
+		<hr>
+
+		<h3> FiC hostname : {{ host }} </h3>
+		<div class="square_btn_orange" id="btn_reflesh">REFLESH</div>
+
+		<div class="info_box">
+			<h2>FPGA Control</h2>
+
+			<h3>Status</h3>
+			PW_OK : <div class="led_green" id="led_power"></div>
+			DONE : <div class="led_green" id="led_done"></div>
+			<hr>
+
+			<h3>Control</h3>
+			<div class="square_btn_orange" id="btn_fpga_reset">FPGA RESET</div> &lt;- This button boom your FPGA and initilize FPGA logic (DONE lamp goes off) <br>
+			<div class="square_btn_orange" id="btn_fpga_startup">FPGA STARTUP</div> &lt;- This button configure your FPGA with default ring.bit <br>
+			<div class="square_btn_orange" id="btn_user_reset">USER MODULE KICK</div> &lt;- This button kicks your HLS modules <br>
+			<hr>
+
+			<h3>Configure</h3>
+			<p>You can upload your sxxxxy FPGA *.bit file from here :) </p>
+
+			<h4>Configuration mode:</h4>
+			Selectmap x16<input type="radio" name="fpga_cfg_mode" value="PROG16" checked> &nbsp;&nbsp;
+			Selectmap x16 (PR)<input type="radio" name="fpga_cfg_mode" value="PROG16_PR"> &nbsp;&nbsp;
+			Selectmap x8 <input type="radio" name="fpga_cfg_mode" value="PROG8"> &nbsp;&nbsp;
+			Selectmap x8 (PR)<input type="radio" name="fpga_cfg_mode" value="PROG8_PR">
+
+			<h4>Configuration file:</h4>
+			<form id="frm_fpga_upload">
+				<label for="inp_fpga_upload" class="square_btn_blue">
+					Browse...
+					<input type="file" style="display:none" id="inp_fpga_upload">
+				</label>
+				<input type="text" value="choose file..." class="inp_fpga_upload_file" id="inp_fpga_upload_file">
+				<!--<input type="submit" name="upload" value="upload?">-->
+				<div class="square_btn_orange" id="btn_fpga_upload">Upload</div>
+			</form>
+		</div>
+
+		<div class="info_box">
+			<h2>Switch Control</h2>
+
+			<h3>SW Table</h3>
+			under development....
+			<!--<div class="square_btn_orange">CONFIG SWITCH</div> -->
+			<hr>
+
+			<h3>Register Editor</h3>
+
+			<div>
+			Addr map (8bit) quick ref<br>
+			0x0000 ... Output 0 <br>
+			0x0100 ... Output 1 <br>
+			... <br>
+			0x1000 ... User data <br>
+			0xffff ... Status register <br>
+			0xfffe ... HLS module register <br>
+			0xfffd ... Link Up (RO) <br>
+			0xfffc ... DipSW (RO) <br>
+			0xfffb ... LED (RW) <br>
+			0xfffa ... Ch.up (RW) <br>
+			<br>
+			</div>
+
+			Address: <input type="text" value="" class="inp_addr" id="inp_mem_addr">
+			<div class="square_btn_orange" id="btn_read_mem">READ</div>
+			Value  : <input type="text" value="" class="inp_val" id="inp_mem_val">
+			<div class="square_btn_orange" id="btn_write_mem">WRITE</div>
+			<hr>
+
+			<h3>Status</h3>
+			Aurora Link-up:&nbsp;
+			<div class="led_green" id="led_linkup"></div>
+			<br><br>
+
+			LED0:
+			<div class="led_red" id="led_0"></div>
+			&nbsp;
+			LED1:
+			<div class="led_red" id="led_1"></div>
+			<br><br>
+
+			<!--
+			<div>
+				LED status:
+				<div class="led_box">
+					 LU_CH00 <div class="led_green" id="led_ch00"></div>
+					 LU_CH01 <div class="led_green" id="led_ch01"></div>
+					 LU_CH02 <div class="led_green" id="led_ch02"></div>
+					 LU_CH03 <div class="led_green" id="led_ch03"></div>
+					<div class="led_sp"></div>
+
+					LU_CH04	<div class="led_green" id="led_ch04"></div>
+					LU_CH05	<div class="led_green" id="led_ch05"></div>
+					LU_CH06	<div class="led_green" id="led_ch06"></div>
+					LU_CH07	<div class="led_green" id="led_ch07"></div>
+					<div class="led_sp"></div>
+					<br>
+				
+					LU_CH08	<div class="led_green" id="led_ch08"></div> 
+					LU_CH09	<div class="led_green" id="led_ch09"></div>
+					LU_CH10	<div class="led_green" id="led_ch10"></div>
+					LU_CH11	<div class="led_green" id="led_ch11"></div>
+					<div class="led_sp"></div>
+				
+					LU_CH12	<div class="led_green" id="led_ch12"></div> 
+					LU_CH13	<div class="led_green" id="led_ch13"></div>
+					LU_CH14	<div class="led_green" id="led_ch14"></div>
+					LU_CH15	<div class="led_green" id="led_ch15"></div>
+					<div class="led_sp"></div>
+					<br>
+                                        
+					LU_CH16	<div class="led_green" id="led_ch16"></div>
+					LU_CH17	<div class="led_green" id="led_ch17"></div>
+					LU_CH18	<div class="led_green" id="led_ch18"></div>
+					LU_CH19	<div class="led_green" id="led_ch19"></div>
+					<div class="led_sp"></div>
+                                        
+					LU_CH20	<div class="led_green" id="led_ch20"></div>
+					LU_CH21	<div class="led_green" id="led_ch21"></div>
+					LU_CH22	<div class="led_green" id="led_ch22"></div>
+					LU_CH23	<div class="led_green" id="led_ch23"></div>
+					<div class="led_sp"></div>
+					<br>
+                                        
+					LU_CH24	<div class="led_green" id="led_ch24"></div>
+					LU_CH25	<div class="led_green" id="led_ch25"></div>
+					LU_CH26	<div class="led_green" id="led_ch26"></div>
+					LU_CH27	<div class="led_green" id="led_ch27"></div>
+					<div class="led_sp"></div>
+                                        
+					LU_CH28	<div class="led_green" id="led_ch28"></div>
+					LU_CH29	<div class="led_green" id="led_ch29"></div>
+					LU_CH30	<div class="led_green" id="led_ch30"></div>
+					LU_CH31	<div class="led_green" id="led_ch31"></div>
+					<div class="led_sp"></div>
+					<br>
+				</div>
+				<br>
+
+				<div>
+					<div class="led_8seg" id="led_8seg0">
+						<div class="led_8seg_a" id="led_8seg0_a"></div>
+						<div class="led_8seg_b" id="led_8seg0_b"></div>
+						<div class="led_8seg_c" id="led_8seg0_c"></div>
+						<div class="led_8seg_d" id="led_8seg0_d"></div>
+						<div class="led_8seg_e" id="led_8seg0_e"></div>
+						<div class="led_8seg_f" id="led_8seg0_f"></div>
+						<div class="led_8seg_g" id="led_8seg0_g"></div>
+					</div>
+					<div class="led_8seg" id="led_8seg1">
+						<div class="led_8seg_a" id="led_8seg1_a"></div>
+						<div class="led_8seg_b" id="led_8seg1_b"></div>
+						<div class="led_8seg_c" id="led_8seg1_c"></div>
+						<div class="led_8seg_d" id="led_8seg1_d"></div>
+						<div class="led_8seg_e" id="led_8seg1_e"></div>
+						<div class="led_8seg_f" id="led_8seg1_f"></div>
+						<div class="led_8seg_g" id="led_8seg1_g"></div>
+					</div>
+				</div>
+			</div>
+			<br>
+
+			<hr>
+			<h3>Memory dump</h3>
+			-->
+
+		</div>
+
+		<!--
+		<div class="info_box">
+			<h2>Raspberry Pi status</h2>
+			Board ID: 
+			CPU TEMP<br>
+			CPU CLOCK<br>
+			CPU VOLT<br>
+			MEMORY <br>
+		</div>
+		-->
+
+		<hr>
+
+		<div class="center_box">
+			<img border=0 src="/static/img/nyacom.png"> <br>
+			nyacom &copy; 2018
+		</div>
+	</body>
+</html>

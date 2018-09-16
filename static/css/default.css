@@ -1,0 +1,227 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto');
+
+/* Page layout ---------------------------------------------------------------*/
+body { 
+    background-color: #303030;
+    color: #ffffff;
+    font-family: 'Roboto', sans-serif; 
+    font-size: 10pt;
+}
+
+.info_box{
+    border-radius: 20px 20px 20px 20px;
+    margin: 10px 10px 10px 10px;
+    padding: 2px 20px 20px 20px;
+    background-color: #505050;
+}
+
+.center_box {
+    max-width: 50%;
+    margin: 0 auto;
+    text-align: center;
+}
+
+/* Controls ------------------------------------------------------------------*/
+.inp_addr {
+    width: 100px;
+    display: inline-block;
+    padding: 8px 12px;
+    border-radius: 5px;
+    color: #ffffff;
+    background: #505050;
+    font-size: 12pt;
+}
+
+.inp_val {
+    width: 100px;
+    display: inline-block;
+    padding: 8px 12px;
+    border-radius: 5px;
+    color: #ffffff;
+    background: #505050;
+    font-size: 12pt;
+}
+
+.inp_fpga_upload_file {
+    width: 300px;
+    display: inline-block;
+    padding: 8px 12px;
+    border-radius: 5px;
+    color: #ffffff;
+    background: #505050;
+}
+
+/*--  Buttons -- */
+.square_btn_blue {
+    display: inline-block;
+    padding: 8px 12px;
+    margin: 2px;
+    border-radius: 5px;
+    color: #ffffff;
+    background: #3498DB;
+    cursor: pointer;
+}
+
+.square_btn_blue:hover {
+    color: #fff;
+    background: #333;
+}
+
+.square_btn_blue:active{
+    color: #333;
+    background: #eee;
+}
+
+.square_btn_orange {
+    display: inline-block;
+    padding: 8px 12px;
+    margin: 2px;
+    border-radius: 5px;
+    color: #ffffff;
+    background: #ffa500;
+    cursor: pointer;
+}
+
+.square_btn_orange:hover {
+    color: #fff;
+    background: #333;
+}
+
+.square_btn_orange:active{
+    color: #333;
+    background: #eee;
+}
+
+/* LED components ------------------------------------------------------------*/
+.led_box {
+    width: 600px;
+    overflow: hidden;
+    border: 1px solid #303030;
+}
+
+.led_green {
+    display: inline-block;
+    width: 10px;
+    height: 5px;
+    border: 2px solid #404040;
+    background: #330;
+}
+
+.led_green_on {
+    background: #00ff00;
+}
+
+.led_red {
+    display: inline-block;
+    width: 10px;
+    height: 5px;
+    border: 2px solid #404040;
+    background: #330;
+}
+
+.led_sp {
+    display: inline-block;
+    width: 10px;
+    height: 5px;
+}
+
+/* ---- 8SEG ---- */
+.led_8seg {
+	display: inline-block;
+	box-sizing: border-box;
+	position: relative;
+	width: 60px;
+	height: 100px;
+	border: solid 4px #111;
+	background-color: #111;
+	overflow: hidden;
+}
+
+.led_8seg::after{
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 30px;
+	height: 12px;
+	border-top: solid 30px #111;
+	border-bottom: solid 30px #111;
+	transform: translate(-50%, -50%);
+}
+
+.led_8seg_a{
+	content: "";
+	position: absolute;
+	top: 0%;
+	left: 50%;
+	width: 28px;
+	height: 28px;
+	transform: translate(-50%, -50%) rotate(45deg);
+	background-color: #330;
+}
+
+.led_8seg_b{
+	content: "";
+	position: absolute;
+	top: 25%;
+	left: 100%;
+	width: 28px;
+	height: 28px;
+	transform: translate(-50%, -50%) rotate(45deg);
+	background-color: #330;
+}
+
+.led_8seg_c{
+	content: "";
+	position: absolute;
+	top: 75%;
+	left: 100%;
+	width: 28px;
+	height: 28px;
+	transform: translate(-50%, -50%) rotate(45deg);
+	background-color: #330;
+}
+
+.led_8seg_d{
+	content: "";
+	position: absolute;
+	top: 100%;
+	left: 50%;
+	width: 28px;
+	height: 28px;
+	transform: translate(-50%, -50%) rotate(45deg);
+	background-color: #330;
+}
+
+.led_8seg_e{
+	content: "";
+	position: absolute;
+	top: 75%;
+	left: 0%;
+	width: 28px;
+	height: 28px;
+	transform: translate(-50%, -50%) rotate(45deg);
+	background-color: #330;
+}
+
+.led_8seg_f{
+	content: "";
+	position: absolute;
+	top: 25%;
+	left: 0%;
+	width: 28px;
+	height: 28px;
+	transform: translate(-50%, -50%) rotate(45deg);
+	background-color: #330;
+}
+
+.led_8seg_g{
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 28px;
+	height: 28px;
+	transform: translate(-50%, -50%) rotate(45deg);
+	background-color: #330;
+}
