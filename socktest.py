@@ -5,6 +5,8 @@ import os
 import socket
 import time
 import base64
+import requests
+import json
 
 # import RPi module
 #import RPi.GPIO as gpio
@@ -20,68 +22,102 @@ import base64
 #import copy
 #import re
 
-BUFSIZE = 4*1024
 #------------------------------------------------------------------------------
-def test_stat(client):
-    client.send(b'STAT')
-    b = client.recv(BUFSIZE)
-    print(b)
+def test_fpga():
+#    url = 'http://172.20.2.101/index.fcgi/fpga'
+    url = 'http://172.20.2.101:5000/fpga'
+    f = open('ring_8bit.bin', 'rb')
+    b64 = base64.b64encode(f.read())
+    f.close()
 
-def test_prog(client):
-    with open('ring_4bit.bin', 'rb') as fd:
-        buf = fd.read()
-        #client.send('PROG {0:d}'.format(len(buf)).encode()) # PROG <len>
-        client.send('PROG8 {0:d}'.format(len(buf)).encode()) # PROG <len>
-        resp = client.recv(BUFSIZE)
-        if resp == 'ERROR\r\n':
-            exit(1)
+    j = json.dumps({
+        "mode": "sm16",
+        "bitname": "ring.bin",
+        "bitstream": b64.decode(encoding='utf-8')
+    })
 
-        client.sendall(buf) # send configurtaion bitstream
-        print(client.recv(BUFSIZE)) # wait OK
+    resp = requests.post(url, j, headers={'Content-Type': 'application/json'})
+    print(resp.json())
 
-def test_read(client):
-    client.send(b'WRITE ffff cb')
-    resp = client.recv(BUFSIZE)
-    if resp == 'ERROR\r\n':
-            exit(1)
+#------------------------------------------------------------------------------
+def test_status():
+    url = 'http://172.20.2.101:5000/fpga'
+    resp = requests.get(url, headers={'Content-Type': 'application/json'})
+    print(resp.json())
 
-    client.send(b'READ ffff')
-    resp = client.recv(BUFSIZE)
-    print(resp)
+    url = 'http://172.20.2.101:5000/status'
+    resp = requests.get(url, headers={'Content-Type': 'application/json'})
+    print(resp.json())
+
+#------------------------------------------------------------------------------
+def test_switch():
+    url = 'http://172.20.2.101:5000/switch'
+
+    j = json.dumps({
+        "ports": "4",
+        "slots": "4",
+        "outputs" : {
+            "o0": {
+                's0': 0,
+                's1': 0,
+                's2': 0,
+                's3': 0,
+            },
+            "o1": {
+                's0': 0,
+                's1': 0,
+                's2': 0,
+                's3': 0,
+            },
+            "o2": {
+                's0': 0,
+                's1': 0,
+                's2': 0,
+                's3': 0,
+            },
+            "o3": {
+                's0': 0,
+                's1': 0,
+                's2': 0,
+                's3': 0,
+            },
+        },
+    })
+
+    resp = requests.post(url, j, headers={'Content-Type': 'application/json'})
+    print(resp.json())
+
+#------------------------------------------------------------------------------
+def test_hls():
+    url = 'http://172.20.2.101:5000/hls'
+
+    j = json.dumps({
+        "type": "command",
+        "command": "reset",
+    })
+
+    resp = requests.post(url, j, headers={'Content-Type': 'application/json'})
+    print(resp.json())
+
+    j = json.dumps({
+        "type": "command",
+        "command": "start",
+    })
+
+    resp = requests.post(url, j, headers={'Content-Type': 'application/json'})
+    print(resp.json())
+
+    #j = json.dumps({
+    #    "type": "data",
+    #    "data": [0xa, 0xb, 0xc, 0xd, 0x0, 0x1, 0x2, 0x3],
+    #})
+
+    #resp = requests.post(url, j, headers={'Content-Type': 'application/json'})
+    #print(resp.json())
 
 #------------------------------------------------------------------------------
 if __name__ == '__main__':
-       client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   # IP socket is using for debug purpose it would be change unix sock
-       #client = socket.socket(socket.UNIX, socket.SOCK_STREAM)   # IP socket is using for debug purpose it would be change unix sock
-
-       client.connect(('127.0.0.1', 4000))
-
-       b = client.recv(BUFSIZE)
-       if b != b'OK\r\n': exit(1)
-       print(b)
-
-       #test_stat(client)
-       test_prog(client)
-       #test_stat(client)
-       #test_write(client)
-
-       test_read(client)
-
-       #client.send('PROG {0:d}'.format(len(buf)).encode())
-       #resp = client.recv(4096)
-       #if resp == 'ERROR\r\n':
-       #    exit(1)
-       #client.sendall(buf)
-       #print(client.recv(4096))
-
-#       client.send(b'WRITE fffb 0f')
-#       b = client.recv(BUFSIZE)
-#       if b != b'OK\r\n': exit(1)
-#       print(b)
-#
-#       client.send(b'READ fffb')
-#       b = client.recv(BUFSIZE)
-#       print(b)
-
-#       client.close()
-
+    test_fpga()
+    test_status()
+#    test_switch()
+    test_hls()

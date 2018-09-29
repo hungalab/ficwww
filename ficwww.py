@@ -1,16 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #------------------------------------------------------------------------------
-from flask import Flask, render_template, jsonify, request
-app = Flask(__name__)
-
 import os
 import socket
-import time
+import time, datetime
 import json
+import base64
 
-# import RPi module
-import RPi.GPIO as gpio
+from flask import Flask, render_template, jsonify, request, abort
+#from flask_restful import Resource, Api, reqparse
+
+app = Flask(__name__)
+#api = Api(app)
+
+# pyficlib2
+import pyficlib2 as Fic 
 
 #import http.server
 #import socketserver
@@ -24,226 +28,34 @@ import RPi.GPIO as gpio
 #import re
 
 #------------------------------------------------------------------------------
-# Board GPIO aliases
-# Board GPIO pin number <--> FPGA signal
+# Status table
 #------------------------------------------------------------------------------
-pin = {
-        'RP_INIT' : 4,   # FPGA reset
-        'RP_RDWR' : 27,  # for FPGA conf
-        'RP_PROG' : 5,   # for FPGA conf
-        'RP_DONE' : 6,   # for FPGA conf
-        'RP_CCLK' : 7,   # for FPGA conf
+ST = {
+    "fpga" : {
+        "mode" : "",        # configured mode
+        "bitname" : "",     # configure bitfile name
+        "conftime" : "",    # configure time
+        "ifbit" : 8,        # Interface bit width
+ #       "done" : False,     # configure done
+        "done" : True,     # configure done
+    },
 
-        'RP_CD0' : 8,    # for FPGA conf
-        'RP_CD1' : 9,    # for FPGA conf
-        'RP_CD2' : 10,   # for FPGA conf
-        'RP_CD3' : 11,   # for FPGA conf
+    "switch" : {
+        "ports" : 0,
+        "slots" : 0,
+        "outputs" : {},
+    },
 
-        'RP_CD4' : 12,   # for FPGA I/O
-        'RP_CD5' : 13,   # for FPGA I/O
-        'RP_CD6' : 14,   # for FPGA I/O
-        'RP_CD7' : 15,   # for FPGA I/O
-        'RP_CD8' : 16,   # for FPGA I/O
-        'RP_CD9' : 17,   # for FPGA I/O
-        'RP_CD10' : 18,  # for FPGA I/O
-        'RP_CD11' : 19,  # for FPGA I/O
-        'RP_CD12' : 20,  # for FPGA I/O
-        'RP_CD13' : 21,  # for FPGA I/O
-        'RP_CD14' : 22,  # for FPGA I/O
-        'RP_CD15' : 23,  # for FPGA I/O
+    "hls" : {
+        "status" : "stop",
+    },
 
-        'RP_PWOK' : 24,  # must be set as input
-        'RP_G_CKSEL' : 25, # must be set as input
-        'RP_CSI' : 26,
+    "board" : {
+        "dipsw" : 0,
+        "led" : 0,
+        "link" : 0,
+    },
 }
-
-#------------------------------------------------------------------------------
-
-LOCKFILE = '/tmp/ficweb.lock'
-FPGA_STAT_FILE = 'tmp/ficweb.stat'
-FPGA_STARTUP_BITSTREAM = "ring.bin"
-BUFSIZE = 4096
-#------------------------------------------------------------------------------
-#def lockfile():
-#    while os.path.exists(LOCKFILE):
-#        time.sleep(1)
-#
-#    f = open(LOCKFILE, 'w')
-#    f.close()
-#
-#def unlockfile():
-#    os.remove(LOCKFILE)
-#------------------------------------------------------------------------------
-#def fic_gpio_setup():
-#    gpio.setmode(gpio.BCM) # GPIO number assignment mode
-#
-#    # PIN init
-#
-#    # initial PIN mode setup
-#    for pn, pi in pin.items():
-#        if pn == 'RP_PWOK' or  pn == 'RP_INIT' or \
-#                pn == 'RP_DONE' or pn == 'RP_G_CKSEL':
-#            gpio.setup(pi, gpio.IN)
-#
-#        else:
-#            gpio.setup(pi, gpio.OUT)    # default OUT
-#            gpio.output(pi, gpio.LOW)   # default LOW
-#
-#    # test
-#    # print("TEST: PW_OK STAT:", gpio.input(pin['RP_PWOK']))
-#
-#
-#------------------------------------------------------------------------------
-# Obtain board status
-#------------------------------------------------------------------------------
-#def get_board_stat():
-#        stat = {}
-#        try:
-#            lockfile()
-#
-#            fic_gpio_setup() # Init pins
-#
-#            stat['PW_OK'] = gpio.input(pin['RP_PWOK'])   # Power is okey
-#            stat['DONE'] = gpio.input(pin['RP_DONE'])    # FPGA is run state
-#
-#            print('DEBUG', stat['DONE'])
-#
-#            gpio.cleanup()
-#
-#            unlockfile()
-#            return stat
-#
-#        except Exception as e:
-#            print("DEBUG: except", e)
-#
-#        unlockfile()
-#        return None
-#------------------------------------------------------------------------------
-def open_socket():
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect(('127.0.0.1', 4000))
-    return client
-
-#------------------------------------------------------------------------------
-def get_board_stat():
-    client = open_socket()
-    
-    resp = client.recv(BUFSIZE).decode('ascii').split('\r\n')
-    if resp[0] != 'OK': return '{}'
-    
-    client.send(b'STAT')
-    resp = client.recv(BUFSIZE).decode('ascii').split('\r\n')
-    #print(resp[0])
-    
-    client.close()
-    
-    return json.loads(resp[0])
-
-#------------------------------------------------------------------------------
-def init_fpga():
-    client = open_socket()
-
-    resp = client.recv(BUFSIZE).decode('ascii').split('\r\n')
-    if resp[0] != 'OK': return '{}'
-
-    client.send(b'INIT')
-
-    client.close()
-
-#------------------------------------------------------------------------------
-def set_fpga_bitstream(fs, mode):
-    buf = fs.read() # read into buffer at all
-
-    client = open_socket()
-    
-    resp = client.recv(BUFSIZE).decode('ascii').split('\r\n')
-    if resp[0] != 'OK': return '{}'
-    
-    # selectmap x16
-    if mode == 'fpga_prog16':
-        client.send('PROG {0:d}'.format(len(buf)).encode())
-        
-    # selectmap x16 + pr
-    if mode == 'fpga_prog16_pr':
-        client.send('PROGPR {0:d}'.format(len(buf)).encode())
-        
-    # selectmap x8
-    if mode == 'fpga_prog8':
-        client.send('PROG8 {0:d}'.format(len(buf)).encode())
-        
-    # selectmap x8 + pr
-    if mode == 'fpga_prog8_pr':
-        client.send('PROG8PR {0:d}'.format(len(buf)).encode())
-
-    resp = client.recv(BUFSIZE).decode('ascii').split('\r\n')
-    if resp[0] != 'OK': return '{}'
-    
-    client.sendall(buf)
-    resp = client.recv(BUFSIZE).decode('ascii').split('\r\n')
-    if resp[0] != 'OK': return '{}'
-    
-    client.close()
-
-    return 'success'
-
-#------------------------------------------------------------------------------
-def fpga_startup():
-    client = open_socket()
-    resp = client.recv(BUFSIZE).decode('ascii').split('\r\n')
-    if resp[0] != 'OK': return '{}'
-
-    print("INFO: Startup FPGA configuration with", FPGA_STARTUP_BITSTREAM)
-
-    with open(FPGA_STARTUP_BITSTREAM, 'rb') as fd:
-        buf = fd.read()
-
-        tx_left = len(buf)
-        client.send('PROG {0:d}'.format(tx_left).encode()) # PROG <len>
-        resp = client.recv(BUFSIZE)
-        if resp == 'ERROR\r\n':
-            exit(1)
-
-        # send configurtaion bitstream
-        while tx_left > 0:
-            tx = client.send(buf)
-            tx_left -= tx
-            
-        resp = client.recv(BUFSIZE)
-        if resp == 'ERROR\r\n':
-            exit(1)
-
-    client.close()
-
-    print("INFO: Startup FPGA configuration done")
-
-#------------------------------------------------------------------------------
-def write_reg(addr, value):
-    client = open_socket()
-    resp = client.recv(BUFSIZE).decode('ascii').split('\r\n')
-    if resp[0] != 'OK': return '{}'
-
-    client.send('WRITE {0:d} {1:d}'.format(addr, value)) # WRITE xxxx xxxx
-    resp = client.recv(BUFSIZE).decode('ascii').split('\r\n')
-    if resp[0] != 'OK': return '{}'
-
-    client.close()
-    print("INFO: write reg at {0:02x} = {1:02x} done".format(addr, value))
-
-    return 'success'
-
-def read_reg(addr):
-    client = open_socket()
-    resp = client.recv(BUFSIZE).decode('ascii').split('\r\n')
-    if resp[0] != 'OK': return '{}'
-
-    print('DEBUG', addr)
-    client.send('READ {0:d}'.format(addr).encode()) # READ xxxx
-    resp = client.recv(BUFSIZE).decode('ascii').split('\r\n')
-
-    client.close()
-    print("INFO: Read reg at {0:d} = {1:s} done".format(addr, resp[0]))
-
-    return 'success'
 
 #------------------------------------------------------------------------------
 # Docroot
@@ -255,55 +67,280 @@ def docroot():
     return render_template('index.html', title=title, host=host)
 
 #------------------------------------------------------------------------------
-@app.route('/api/<key>', methods=['POST','GET'])
-def api_post(key):
-    if request.method == 'POST':
-        # FPGA configuration
-        if key == 'fpga_prog16' or key == 'fpga_prog16_pr' or \
-                key == 'fpga_prog8' or key == 'fpga_prog8_pr':
+# RESTful APIs
+#------------------------------------------------------------------------------
 
-            filebuf = request.files.get('bitstream')
-            if filebuf is None:
-                return jsonify('File is not found!')
+#------------------------------------------------------------------------------
+# API for FPGA
+#------------------------------------------------------------------------------
+@app.route('/fpga', methods=['POST'])
+def rest_fpga_post():
 
-            fs = filebuf.stream
-            return jsonify(set_fpga_bitstream(fs, key))
+    # Check json 
+    if not request.is_json:
+        abort(400)
 
-        # FPGA operations
-        if key == 'fpga':
-            if request.json['query'] == 'reset':
-                print("reset")
-                init_fpga()
-                return jsonify(ret='success')
+    json = request.json
+    try:
+        ST['fpga']['mode'] = json['mode']
+        ST['fpga']['bitname'] = json['bitname']
+        bitstream = json['bitstream']
 
-            if request.json['query'] == 'startup':
-                fpga_startup()
-                return jsonify(ret='success')
+    except Exception as e:
+        print(e)
+        return jsonify({"return" : "failed"})
 
-        # WRITE reg
-        if key == 'reg':
-            if request.json['query'] == 'write':
-                print('reg write')
-                addr = int(request.json['addr'])
-                value = int(request.json['value'])
-                return jsonify(write_reg(addr, value))
+    # Check progmode
+    if ("sm16", "sm16pr", "sm8", "sm8pr").count(ST['fpga']['mode']) == 0:
+        return jsonify({"return" : "failed"})
 
-            if request.json['query'] == 'read':
-                addr = int(request.json['addr'])
-                return jsonify(read_reg(addr))
+    # Decode bitstream
+    try:
+        bs = base64.b64decode(bitstream)
+        print("DEBUG: Recived bytes: ", len(bs))
 
+    except Exception as e:
+        print(e)
+        return jsonify({"return" : "failed"})
 
-        return jsonify(resp='invalid')
+    # Program FPGA
+    print("DEBUG: Program FPGA...")
+    try:
+        Fic.gpio_open()
+        ST['fpga']['done'] = False
 
-    elif request.method == 'GET':
-        if key == 'status':
-            return jsonify(get_board_stat())
+        if ST['fpga']['mode'] == 'sm16':
+            Fic.prog_sm16(data=bs, progmode=0)
+            ST['fpga']['ifbit'] = 8
 
-        else:
-            return jsonify('invalid')
+        elif ST['fpga']['mode'] == 'sm16pr':
+            Fic.prog_sm16(data=bs, progmode=1)
+            ST['fpga']['ifbit'] = 8
+
+        elif ST['fpga']['mode'] == 'sm8':
+            Fic.prog_sm8(data=bs, progmode=0)
+            ST['fpga']['ifbit'] = 4
+
+        elif ST['fpga']['mode'] == 'sm8pr':
+            Fic.prog_sm8(data=bs, progmode=1)
+            ST['fpga']['ifbit'] = 4
+
+        Fic.gpio_close()
+
+    except:
+        Fic.gpio_close()
+        return jsonify({"return" : "failed"})
+
+    # Set status
+    ST['fpga']['conftime'] = datetime.datetime.now()
+    ST['fpga']['done'] = True
+
+    return jsonify({"return" : "success"})
+
+# GET FPGA STATUS
+@app.route('/fpga', methods=['GET'])
+def rest_fpga_get():
+    return jsonify({"return" : "success", "status" : ST["fpga"]})
+
+# Reset FPGA
+@app.route('/fpga', methods=['DELETE'])
+def rest_fpga_delete():
+    Fic.gpio_open()
+    Fic.prog_init()
+    Fic.gpio_close()
+
+    ST['fpga']['bitname'] = ''
+    ST['fpga']['conftime'] = ''
+    ST['fpga']['done'] = False
+
+    return jsonify({"return" : "success"})
+
+#------------------------------------------------------------------------------
+# API for SWITCH
+#------------------------------------------------------------------------------
+# POST Switch
+@app.route('/switch', methods=['POST'])
+def rest_switch_post():
+    # Check json 
+    if not request.is_json:
+        abort(400)
+
+    json = request.json
+    try:
+        ST['switch']['ports'] = json['ports']
+        ST['switch']['slots'] = json['slots']
+        ST['switch']['outputs'] = json['outputs']
+
+    except Exception as e:
+        print(e)
+        return jsonify({"return" : "failed"})
+
+    # Configure switch
+    Fic.gpio_open()
+    for on, (ok, ov) in enumerate(ST['switch']['outputs'].items()):
+        addr_hi = on
+        for sn, (sk, sv) in enumerate(ov.items()):
+            addr_lo = sn
+            addr = (addr_hi << 8 | addr_lo)
+
+            if (ST['fpga']['ifbit'] == 8):
+                # Use 8bit mode I/F
+                Fic.wb8(addr, sv.to_bytes(1, 'big'))
+
+            elif (ST['fpga']['ifbit'] == 4):
+                # Use 4bit mode I/F
+                Fic.wb4(addr, sv.to_bytes(1, 'big'))
+
+    Fic.gpio_close()
+
+    return jsonify({"return" : "success"})
+
+# GET Switch
+@app.route('/switch', methods=['GET'])
+def rest_switch_get():
+    return jsonify({"return" : "success", "status" : ST["switch"]})
+
+#------------------------------------------------------------------------------
+# API for HLS
+#------------------------------------------------------------------------------
+@app.route('/hls', methods=['POST'])
+def rest_hls_post():
+    # Check json 
+    if not request.is_json:
+        abort(400)
+
+    if ST['fpga']['done'] == False:
+        return jsonify({"return" : "failed", "error" : "FPGA is not configured"})
+
+    json = request.json
+    try:
+        hls_type = json['type']
+        if hls_type == 'command':
+            hls_cmd = json['command']
+
+            Fic.gpio_open()
+
+            if hls_cmd == 'start':
+                if ST['fpga']['ifbit'] == 8:
+                    Fic.hls_start8()
+
+                if ST['fpga']['ifbit'] == 4:
+                    Fic.hls_start4()
+
+                ST['hls']['status'] = 'start'
+
+            elif hls_cmd == 'reset':
+                if ST['fpga']['ifbit'] == 8:
+                    Fic.hls_reset8()
+
+                if ST['fpga']['ifbit'] == 4:
+                    Fic.hls_reset4()
+
+                ST['hls']['status'] = 'stop'
+
+            Fic.gpio_close()
+
+        elif hls_type == 'data':
+            if ST['hls']['status'] == 'stop':
+                return jsonify({"return" : "failed", "error" : "HLS is not running yet"})
+
+            hls_data = json['data']
+            Fic.gpio_open()
+            Fic.hls_send4(bytes(hls_data))  # Todo: is any 8bit I/F?
+            Fic.gpio_close()
+
+    except Exception as e:
+        print(e)
+        Fic.gpio_close()
+        return jsonify({"return" : "failed"})
+
+    return jsonify({"return" : "success"})
+
+#------------------------------------------------------------------------------
+# API for status
+#------------------------------------------------------------------------------
+@app.route('/status', methods=['GET'])
+def rest_status_get():
+    Fic.gpio_open()
+
+    if ST['fpga']['ifbit'] == 8:
+        ST['board']['led'] = Fic.rb8(0xfffb)
+        ST['board']['dipsw'] = Fic.rb8(0xfffc)
+        ST['board']['link'] = Fic.rb8(0xfffd)
+
+    if ST['fpga']['ifbit'] == 4:
+        ST['board']['led'] = Fic.rb4(0xfffb)
+        ST['board']['dipsw'] = Fic.rb4(0xfffc)
+        ST['board']['link'] = Fic.rb4(0xfffd)
+    
+    Fic.gpio_close()
+    return jsonify({"return" : "success", "status" : ST})
+
+#------------------------------------------------------------------------------
+# API for reg
+#------------------------------------------------------------------------------
+@app.route('/reg', methods=['POST'])
+def rest_reg_post():
+    # Check json 
+    if not request.is_json:
+        abort(400)
+
+    if ST['fpga']['done'] == False:
+        return jsonify({"return" : "failed", "error" : "FPGA is not configured"})
+
+    json = request.json
+    try:
+        addr = json['address']
+        data = json['data']
+
+        Fic.gpio_open()
+
+        if ST['fpga']['ifbit'] == 8:
+            Fic.wb8(addr, data)
+
+        if ST['fpga']['ifbit'] == 4:
+            Fic.wb4(addr, data)
+
+        Fic.gpio_close()
+
+    except Exception as e:
+        print(e)
+        Fic.gpio_close()
+        return jsonify({"return" : "failed"})
+
+    return jsonify({"return" : "success"})
+
+@app.route('/reg', methods=['GET'])
+def rest_reg_get():
+    # Check json 
+    if not request.is_json:
+        abort(400)
+
+    if ST['fpga']['done'] == False:
+        return jsonify({"return" : "failed", "error" : "FPGA is not configured"})
+
+    data = None
+    json = request.json
+    try:
+        addr = json['address']
+        Fic.gpio_open()
+
+        if ST['fpga']['ifbit'] == 8:
+            data = Fic.rb8(addr)
+
+        if ST['fpga']['ifbit'] == 4:
+            data = Fic.rb4(addr)
+
+        Fic.gpio_close()
+
+    except Exception as e:
+        print(e)
+        Fic.gpio_close()
+        return jsonify({"return" : "failed"})
+
+    return jsonify({"return" : "success", "data" : data})
 
 #------------------------------------------------------------------------------
 if __name__ == "__main__":
 #    fpga_startup()
-    app.run(debug=True, use_reloader=False, host='0.0.0.0')
-
+    app.run(debug=True, use_reloader=True, host='0.0.0.0')
