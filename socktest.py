@@ -22,10 +22,13 @@ import json
 #import copy
 #import re
 
+BASE_URI = 'http://172.20.2.101:5000'
+#BASE_URI = 'http://172.20.2.101/index.fcgi'
+
 #------------------------------------------------------------------------------
 def test_fpga():
-#    url = 'http://172.20.2.101/index.fcgi/fpga'
-    url = 'http://172.20.2.101:5000/fpga'
+    print("DEBUG: test_fpga")
+    url = BASE_URI + '/fpga'
     f = open('ring_8bit.bin', 'rb')
     b64 = base64.b64encode(f.read())
     f.close()
@@ -41,18 +44,21 @@ def test_fpga():
 
 #------------------------------------------------------------------------------
 def test_status():
-    url = 'http://172.20.2.101:5000/fpga'
+    print("DEBUG: test_status")
+
+    url = BASE_URI + '/fpga'
     resp = requests.get(url, headers={'Content-Type': 'application/json'})
     print(resp.json())
 
-    url = 'http://172.20.2.101:5000/status'
+    url = BASE_URI + '/status'
     resp = requests.get(url, headers={'Content-Type': 'application/json'})
     print(resp.json())
 
 #------------------------------------------------------------------------------
 def test_switch():
-    url = 'http://172.20.2.101:5000/switch'
+    print("DEBUG: test_switch")
 
+    url = BASE_URI + '/switch'
     j = json.dumps({
         "ports": "4",
         "slots": "4",
@@ -89,7 +95,8 @@ def test_switch():
 
 #------------------------------------------------------------------------------
 def test_hls():
-    url = 'http://172.20.2.101:5000/hls'
+    print("DEBUG: test_hls")
+    url = BASE_URI + '/hls'
 
     j = json.dumps({
         "type": "command",
@@ -119,5 +126,6 @@ def test_hls():
 if __name__ == '__main__':
     test_fpga()
     test_status()
+
 #    test_switch()
-    test_hls()
+#    test_hls()

@@ -17,28 +17,32 @@
 		<h3> FiC hostname : {{ host }} </h3>
 		<div class="square_btn_orange" id="btn_reflesh">REFLESH</div>
 
+		<!---------------- FPGA control box ---------------->
 		<div class="info_box">
 			<h2>FPGA Control</h2>
 
 			<h3>Status</h3>
-			PW_OK : <div class="led_green" id="led_power"></div>
-			DONE : <div class="led_green" id="led_done"></div>
+			PW_OK : <div class="led_green" id="led_power"></div> /
+			DONE : <div class="led_green" id="led_done"></div> /
+			CONF : <span id="bit_file_name"></span> /
+			CONF TIME : <span id="config_time"></span> /
 			<hr>
 
 			<h3>Control</h3>
-			<div class="square_btn_orange" id="btn_fpga_reset">FPGA RESET</div> &lt;- This button boom your FPGA and initilize FPGA logic (DONE lamp goes off) <br>
-			<div class="square_btn_orange" id="btn_fpga_startup">FPGA STARTUP</div> &lt;- This button configure your FPGA with default ring.bit <br>
-			<div class="square_btn_orange" id="btn_user_reset">USER MODULE KICK</div> &lt;- This button kicks your HLS modules <br>
+			<div class="square_btn_orange" id="btn_fpga_reset">FPGA RESET</div> 
+			<div class="square_btn_orange" id="btn_fpga_startup">FPGA STARTUP</div> 
+			<div class="square_btn_orange" id="btn_hls_reset">HLS MODULE RESET</div>
+			<div class="square_btn_orange" id="btn_hls_start">HLS MODULE START</div>
 			<hr>
 
 			<h3>Configure</h3>
 			<p>You can upload your sxxxxy FPGA *.bit file from here :) </p>
 
 			<h4>Configuration mode:</h4>
-			Selectmap x16<input type="radio" name="fpga_cfg_mode" value="PROG16" checked> &nbsp;&nbsp;
-			Selectmap x16 (PR)<input type="radio" name="fpga_cfg_mode" value="PROG16_PR"> &nbsp;&nbsp;
-			Selectmap x8 <input type="radio" name="fpga_cfg_mode" value="PROG8"> &nbsp;&nbsp;
-			Selectmap x8 (PR)<input type="radio" name="fpga_cfg_mode" value="PROG8_PR">
+			Selectmap x16 <input type="radio" name="fpga_cfg_mode" value="sm16" checked width="10" height="10"> &nbsp;&nbsp;
+			Selectmap x16 (PR) <input type="radio" name="fpga_cfg_mode" value="sm16pr"> &nbsp;&nbsp;
+			Selectmap x8 <input type="radio" name="fpga_cfg_mode" value="sm8"> &nbsp;&nbsp;
+			Selectmap x8 (PR)<input type="radio" name="fpga_cfg_mode" value="sm8pr">
 
 			<h4>Configuration file:</h4>
 			<form id="frm_fpga_upload">
@@ -49,9 +53,11 @@
 				<input type="text" value="choose file..." class="inp_fpga_upload_file" id="inp_fpga_upload_file">
 				<!--<input type="submit" name="upload" value="upload?">-->
 				<div class="square_btn_orange" id="btn_fpga_upload">Upload</div>
+				<span id="upload_status"></span>
 			</form>
 		</div>
 
+		<!---------------- Switch control box ---------------->
 		<div class="info_box">
 			<h2>Switch Control</h2>
 

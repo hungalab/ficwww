@@ -33,27 +33,25 @@ import pyficlib2 as Fic
 ST = {
     "fpga" : {
         "mode" : "",        # configured mode
-        "bitname" : "",     # configure bitfile name
-        "conftime" : "",    # configure time
+        "bitname" : "unknown",     # configure bitfile name
+        "conftime" : "----/--/-- --:--:--",    # configure time
         "ifbit" : 8,        # Interface bit width
- #       "done" : False,     # configure done
-        "done" : True,     # configure done
+        "done": False,     # configure done
     },
-
     "switch" : {
         "ports" : 0,
         "slots" : 0,
         "outputs" : {},
     },
-
     "hls" : {
         "status" : "stop",
     },
-
     "board" : {
         "dipsw" : 0,
         "led" : 0,
         "link" : 0,
+        "power" : False,
+        "done" : False,
     },
 }
 
@@ -73,14 +71,16 @@ def docroot():
 #------------------------------------------------------------------------------
 # API for FPGA
 #------------------------------------------------------------------------------
+
+# POST
 @app.route('/fpga', methods=['POST'])
 def rest_fpga_post():
-
     # Check json 
     if not request.is_json:
         abort(400)
 
     json = request.json
+
     try:
         ST['fpga']['mode'] = json['mode']
         ST['fpga']['bitname'] = json['bitname']
@@ -89,6 +89,7 @@ def rest_fpga_post():
     except Exception as e:
         print(e)
         return jsonify({"return" : "failed"})
+
 
     # Check progmode
     if ("sm16", "sm16pr", "sm8", "sm8pr").count(ST['fpga']['mode']) == 0:
@@ -104,9 +105,10 @@ def rest_fpga_post():
         return jsonify({"return" : "failed"})
 
     # Program FPGA
+    Fic.gpio_open()
+
     print("DEBUG: Program FPGA...")
     try:
-        Fic.gpio_open()
         ST['fpga']['done'] = False
 
         if ST['fpga']['mode'] == 'sm16':
@@ -125,16 +127,15 @@ def rest_fpga_post():
             Fic.prog_sm8(data=bs, progmode=1)
             ST['fpga']['ifbit'] = 4
 
-        Fic.gpio_close()
-
     except:
         Fic.gpio_close()
         return jsonify({"return" : "failed"})
 
     # Set status
     ST['fpga']['conftime'] = datetime.datetime.now()
-    ST['fpga']['done'] = True
+    ST['fpga']['done'] = Fic.get_done()
 
+    Fic.gpio_close()
     return jsonify({"return" : "success"})
 
 # GET FPGA STATUS
@@ -158,6 +159,7 @@ def rest_fpga_delete():
 #------------------------------------------------------------------------------
 # API for SWITCH
 #------------------------------------------------------------------------------
+
 # POST Switch
 @app.route('/switch', methods=['POST'])
 def rest_switch_post():
@@ -264,15 +266,18 @@ def rest_status_get():
     Fic.gpio_open()
 
     if ST['fpga']['ifbit'] == 8:
-        ST['board']['led'] = Fic.rb8(0xfffb)
-        ST['board']['dipsw'] = Fic.rb8(0xfffc)
-        ST['board']['link'] = Fic.rb8(0xfffd)
+        ST['board']['led'] = Fic.rb8(0xfffb)    # read LED status
+        ST['board']['dipsw'] = Fic.rb8(0xfffc)  # read DIPSW status
+        ST['board']['link'] = Fic.rb8(0xfffd)   # read Link status
 
     if ST['fpga']['ifbit'] == 4:
-        ST['board']['led'] = Fic.rb4(0xfffb)
-        ST['board']['dipsw'] = Fic.rb4(0xfffc)
-        ST['board']['link'] = Fic.rb4(0xfffd)
+        ST['board']['led'] = Fic.rb4(0xfffb)    # read LED status
+        ST['board']['dipsw'] = Fic.rb4(0xfffc)  # read DIPSW status
+        ST['board']['link'] = Fic.rb4(0xfffd)   # read Link status
     
+    ST['board']['done'] = Fic.get_done()
+    ST['board']['power'] = Fic.get_power()
+
     Fic.gpio_close()
     return jsonify({"return" : "success", "status" : ST})
 
