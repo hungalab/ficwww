@@ -32,9 +32,10 @@
             - [GET METHOD](#get-method-1)
         - [/status](#status)
             - [GET METHOD](#get-method-2)
-        - [/register](#register)
-            - [PUT METHOD](#put-method)
-            - [GET METHOD](#get-method-3)
+        - [/regread](#regread)
+            - [POST METHOD](#post-method-3)
+        - [/regwrite](#regwrite)
+            - [POST METHOD](#post-method-4)
 
 <!-- /TOC -->
 
@@ -223,12 +224,14 @@ Note: you need start HLS module before this.
 
 ### /status
 #### GET METHOD
-receive current FiC board status
+receive current FiC board status 
+
+_Note: Return format is out-of-dated. please reference actual code_
 
 - Return
     ```
     {
-      'dipsw'   : '<current value'
+      'dipsw'   : '<current value>'
       'led'     : '<current value>'
       'link'    : '<current value>'
       'pwrok'   : '<current value>'
@@ -240,10 +243,32 @@ receive current FiC board status
 
 ----
 
-### /register
-direct R/W to/from FiC register
+### /regread
+direct register read of FiC FPGA
+#### POST METHOD
+Read from FiC register
 
-#### PUT METHOD
+- JSON Format
+    ```
+    {
+      'address'   : '<target address>'
+    }
+    ```
+
+- Return 
+    ```
+    {
+      'data'  : '<read data value>'
+      'error' : '<error message if present>'
+      'return': 'success' | 'failed'
+    }
+
+----
+
+### /regwrite
+direct register write of FiC FPGA
+
+#### POST METHOD
 Write to FiC register
 
 - JSON Format
@@ -261,21 +286,3 @@ Write to FiC register
       'return': 'success' | 'failed'
     }
     ```
-
-#### GET METHOD
-Read to FiC register
-
-- JSON Format
-    ```
-    {
-      'address'   : '<target address>'
-    }
-    ```
-
-- Return 
-    ```
-    {
-      'data'  : '<read data value>'
-      'error' : '<error message if present>'
-      'return': 'success' | 'failed'
-    }

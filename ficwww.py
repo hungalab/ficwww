@@ -39,9 +39,16 @@ ST = {
         "done": False,     # configure done
     },
     "switch" : {
-        "ports" : 0,
-        "slots" : 0,
-        "outputs" : {},
+        "ports" : 2,
+        "slots" : 1,
+        "outputs" : {
+            "o0" : {
+                "s0" : 0,
+            },
+            "o1" : {
+                "s0" : 0,
+            }
+        },
     },
     "hls" : {
         "status" : "stop",
@@ -284,8 +291,8 @@ def rest_status_get():
 #------------------------------------------------------------------------------
 # API for reg
 #------------------------------------------------------------------------------
-@app.route('/reg', methods=['POST'])
-def rest_reg_post():
+@app.route('/regwrite', methods=['POST'])
+def rest_regwrite():
     # Check json 
     if not request.is_json:
         abort(400)
@@ -315,8 +322,8 @@ def rest_reg_post():
 
     return jsonify({"return" : "success"})
 
-@app.route('/reg', methods=['GET'])
-def rest_reg_get():
+@app.route('/regread', methods=['POST'])
+def rest_regread():
     # Check json 
     if not request.is_json:
         abort(400)

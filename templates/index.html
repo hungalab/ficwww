@@ -9,19 +9,20 @@
         <link rel="stylesheet" href="/static/css/default.css">
 	</head>
 	<body>
-		<h2> Flow-in-Cloud DASHBOARD (on {{host}})</h2> 
-		<img border=0 src="/static/img/hlab.png"><br>
+		<h2> Flow-in-Cloud Board (on {{host}})</h2> 
+		<img border=0 src="/static/img/hlab.png" width="200px"><br>
 		<b>WE ACCELERATE THE FUTURE.</b>
 		<hr>
 
 		<h3> FiC hostname : {{ host }} </h3>
-		<div class="square_btn_orange" id="btn_reflesh">REFLESH</div>
 
 		<!---------------- FPGA control box ---------------->
 		<div class="info_box">
-			<h2>FPGA Control</h2>
+			<h2>FPGA</h2>
 
 			<h3>Status</h3>
+			<span class="square_btn_orange" id="btn_reflesh">REFLESH</span>
+			<br><br>
 			PW_OK : <div class="led_green" id="led_power"></div> /
 			DONE : <div class="led_green" id="led_done"></div> /
 			CONF : <span id="bit_file_name"></span> /
@@ -30,13 +31,13 @@
 
 			<h3>Control</h3>
 			<div class="square_btn_orange" id="btn_fpga_reset">FPGA RESET</div> 
-			<div class="square_btn_orange" id="btn_fpga_startup">FPGA STARTUP</div> 
+			<!-- <div class="square_btn_orange" id="btn_fpga_startup">FPGA STARTUP</div> -->
 			<div class="square_btn_orange" id="btn_hls_reset">HLS MODULE RESET</div>
 			<div class="square_btn_orange" id="btn_hls_start">HLS MODULE START</div>
 			<hr>
 
 			<h3>Configure</h3>
-			<p>You can upload your sxxxxy FPGA *.bit file from here :) </p>
+			<p>You can upload FPGA *.bit file from here</p>
 
 			<h4>Configuration mode:</h4>
 			Selectmap x16 <input type="radio" name="fpga_cfg_mode" value="sm16" checked width="10" height="10"> &nbsp;&nbsp;
@@ -44,7 +45,6 @@
 			Selectmap x8 <input type="radio" name="fpga_cfg_mode" value="sm8"> &nbsp;&nbsp;
 			Selectmap x8 (PR)<input type="radio" name="fpga_cfg_mode" value="sm8pr">
 
-			<h4>Configuration file:</h4>
 			<form id="frm_fpga_upload">
 				<label for="inp_fpga_upload" class="square_btn_blue">
 					Browse...
@@ -54,25 +54,41 @@
 				<!--<input type="submit" name="upload" value="upload?">-->
 				<div class="square_btn_orange" id="btn_fpga_upload">Upload</div>
 				<span id="upload_status"></span>
+				<img id="upload_spinner" style="visibility:hidden;" border=0 src="/static/img/fire.gif" width=32px height=32px>
+
 			</form>
 		</div>
 
 		<!---------------- Switch control box ---------------->
 		<div class="info_box">
-			<h2>Switch Control</h2>
+			<h2>Switch</h2>
+
+			<!--
+			<h3>SW status</h3>
+			Packet counter...
+			<hr>
+			-->
 
 			<h3>SW Table</h3>
-			under development....
-			<!--<div class="square_btn_orange">CONFIG SWITCH</div> -->
+			Number of Ports: <input type="text" value="2" id="inp_sw_ports"> <br>
+			Number of Slots: <input type="text" value="2" id="inp_sw_slots"> <br>
+			<br>
+			<div id="sw_conf_dom"></div>
+
+			<textarea id="sw_config" rows=20, cols=80></textarea><br>
+			<!-- <div class="square_btn_orange" id="sw_recall">RECALL</div> -->
+			<div class="square_btn_orange" id="sw_set">CONFIG</div>
 			<hr>
 
 			<h3>Register Editor</h3>
+			Address(hex): <input type="text" value="" class="inp_val" id="inp_reg_addr">
+			Value(hex)  : <input type="text" value="" class="inp_val" id="inp_reg_val">
+			<div class="square_btn_orange" id="btn_reg_read">READ</div>
+			<div class="square_btn_orange" id="btn_reg_write">WRITE</div>
 
-			<div>
-			Addr map (8bit) quick ref<br>
-			0x0000 ... Output 0 <br>
-			0x0100 ... Output 1 <br>
-			... <br>
+			<br><br>
+
+			<h4>Addr map (8bit) quick ref: </h4>
 			0x1000 ... User data <br>
 			0xffff ... Status register <br>
 			0xfffe ... HLS module register <br>
@@ -83,23 +99,12 @@
 			<br>
 			</div>
 
-			Address: <input type="text" value="" class="inp_addr" id="inp_mem_addr">
-			<div class="square_btn_orange" id="btn_read_mem">READ</div>
-			Value  : <input type="text" value="" class="inp_val" id="inp_mem_val">
-			<div class="square_btn_orange" id="btn_write_mem">WRITE</div>
 			<hr>
 
 			<h3>Status</h3>
-			Aurora Link-up:&nbsp;
-			<div class="led_green" id="led_linkup"></div>
-			<br><br>
-
-			LED0:
-			<div class="led_red" id="led_0"></div>
-			&nbsp;
-			LED1:
-			<div class="led_red" id="led_1"></div>
-			<br><br>
+			Aurora Link-up:&nbsp; <span class="led_green" id="led_linkup"></span> &nbsp; / 
+			LED0: <span class="led_red" id="led_0"></span> &nbsp; /
+			LED1: <span class="led_red" id="led_1"></span>
 
 			<!--
 			<div>
