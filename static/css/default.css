@@ -21,19 +21,46 @@ body {
     text-align: center;
 }
 
+/* sw config -----------------------------------------------------------------*/
+.sw_config {
+	border-radius: 10px 10px 10px 10px;
+	margin: 5px 5px 5px 5px;
+    padding: 5px 5px 5px 5px;
+    background-color: #707070;
+}
+
+.sw_config_port {
+	padding-left: 0px;
+}
+
+.sw_config_slot {
+    display: inline-block;
+	border-radius: 10px 10px 10px 10px;
+	margin: 5px 5px 5px 5px;
+    padding: 10px 10px 10px 10px;
+	background-color: #505050;
+	border: #ffffff;
+}
+
 /* Controls ------------------------------------------------------------------*/
 .inp_val {
     width: 100px;
     display: inline-block;
-    padding: 8px 12px;
+    padding: 2px 12px;
     border-radius: 5px;
     color: #ffffff;
     background: #505050;
     font-size: 12pt;
 }
 
-.inp_val_error {
-    background: #880000;
+.inp_sw_config {
+    width: 30px;
+    display: inline-block;
+    padding: 2px 12px;
+    border-radius: 5px;
+    color: #ffffff;
+    background: #505050;
+    font-size: 12pt;
 }
 
 .inp_fpga_upload_file {
@@ -45,7 +72,11 @@ body {
     background: #505050;
 }
 
-/*--  Buttons -- */
+.inp_val_error {
+    background: #880000;
+}
+
+/* Buttons -------------------------------------------------------------------*/
 .square_btn_blue {
     display: inline-block;
     padding: 8px 12px;

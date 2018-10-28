@@ -11,7 +11,7 @@
 	<body>
 		<h2> Flow-in-Cloud Board (on {{host}})</h2> 
 		<img border=0 src="/static/img/hlab.png" width="200px"><br>
-		<b>WE ACCELERATE THE FUTURE.</b>
+		<b>WE ACCELERATE THE FUTURE ?</b>
 		<hr>
 
 		<h3> FiC hostname : {{ host }} </h3>
@@ -30,7 +30,7 @@
 			<hr>
 
 			<h3>Control</h3>
-			<div class="square_btn_orange" id="btn_fpga_reset">FPGA RESET</div> 
+			<!-- <div class="square_btn_orange" id="btn_fpga_reset">FPGA RESET</div> -->
 			<!-- <div class="square_btn_orange" id="btn_fpga_startup">FPGA STARTUP</div> -->
 			<div class="square_btn_orange" id="btn_hls_reset">HLS MODULE RESET</div>
 			<div class="square_btn_orange" id="btn_hls_start">HLS MODULE START</div>
@@ -55,7 +55,6 @@
 				<div class="square_btn_orange" id="btn_fpga_upload">Upload</div>
 				<span id="upload_status"></span>
 				<img id="upload_spinner" style="visibility:hidden;" border=0 src="/static/img/fire.gif" width=32px height=32px>
-
 			</form>
 		</div>
 
@@ -70,14 +69,25 @@
 			-->
 
 			<h3>SW Table</h3>
-			Number of Ports: <input type="text" value="2" id="inp_sw_ports"> <br>
-			Number of Slots: <input type="text" value="2" id="inp_sw_slots"> <br>
+			<form id="frm_table_upload">
+				<label for="inp_table_upload" class="square_btn_blue">
+					Browse...
+					<input type="file" style="display:none" id="inp_table_upload">
+				</label>
+				<input type="text" value="choose file..." class="inp_fpga_upload_file" id="inp_table_upload_file">
+				<div class="square_btn_orange" id="btn_table_upload">Upload</div>
+			</form>
 			<br>
-			<div id="sw_conf_dom"></div>
+			<div id="sw_conf" class="sw_config">
+				Number of Ports: <input type="text" value="4" class="inp_sw_config" id="inp_sw_ports"> &nbsp;
+				Number of Slots: <input type="text" value="1" class="inp_sw_config" id="inp_sw_slots"> <br>
+				<div id="sw_conf_table"></div>
+			</div>
 
-			<textarea id="sw_config" rows=20, cols=80></textarea><br>
 			<!-- <div class="square_btn_orange" id="sw_recall">RECALL</div> -->
-			<div class="square_btn_orange" id="sw_set">CONFIG</div>
+			<a class="square_btn_orange" id="sw_save">SAVE TO FILE</a>
+			<div class="square_btn_orange" id="sw_set">SET</div>
+			<span id="sw_status"></span>
 			<hr>
 
 			<h3>Register Editor</h3>
@@ -97,7 +107,6 @@
 			0xfffb ... LED (RW) <br>
 			0xfffa ... Ch.up (RW) <br>
 			<br>
-			</div>
 
 			<hr>
 
@@ -106,6 +115,7 @@
 			LED0: <span class="led_red" id="led_0"></span> &nbsp; /
 			LED1: <span class="led_red" id="led_1"></span>
 
+			</div>
 			<!--
 			<div>
 				LED status:
