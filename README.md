@@ -68,9 +68,96 @@ socktest.py is a test script for RESTful API
 
 
 ### Deployment
-For deployment, use lighttpd with fcgi plugin. (Please refer official flask deployment manual)
+For deployment, use lighttpd with fcgi plugin. 
+(Please refer official flask deployment manual too)
 
 index.fcgi is an example entry point .fcgi script for ficwww.py
+
+#### On Raspbian
+do following commands on root
+
+    sudo apt install lighttpd
+    cd /var/www
+    git clone http://github.com/hungalab/ficwww
+    cd ficwww
+    git clone http://github.com/hungalab/libfic2
+    cd libfic2
+    make
+    cd ../
+    ln -s libfic2/pyficlib2.so .
+
+
+modify /etc/lighttpd/lighttpd.conf like below
+
+    server.modules = (
+            "mod_access",
+            "mod_alias",
+            "mod_compress",
+            "mod_redirect",
+            "mod_accesslog",
+    )
+
+    server.document-root        = "/var/www/ficwww"
+    server.upload-dirs          = ( "/var/cache/lighttpd/uploads" )
+    server.errorlog             = "/var/log/lighttpd/error.log"
+    server.pid-file             = "/var/run/lighttpd.pid"
+    server.username             = "www-data"
+    server.groupname            = "www-data"
+    server.port                 = 80
+
+    index-file.names            = ( "index.php", "index.html", "index.lighttpd.html", "index.fcgi" )
+    url.access-deny             = ( "~", ".inc" )
+    static-file.exclude-extensions = ( ".php", ".pl", ".fcgi" )
+
+    compress.cache-dir          = "/var/cache/lighttpd/compress/"
+    compress.filetype           = ( "application/javascript", "text/css", "text/html", "text/plain" )
+
+    # default listening port for IPv6 falls back to the IPv4 port
+    include_shell "/usr/share/lighttpd/use-ipv6.pl " + server.port
+    include_shell "/usr/share/lighttpd/create-mime.assign.pl"
+    include_shell "/usr/share/lighttpd/include-conf-enabled.pl"
+
+then enable modules on /etc/lighttpd/conf-enabled
+(create symlinks from conf-available)
+
+    drwxr-xr-x 2 root root 4096 Oct 30 00:12 .
+    drwxr-xr-x 4 root root 4096 Oct 30 00:09 ..
+    lrwxrwxrwx 1 root root   35 Oct 30 00:12 10-accesslog.conf -> ../conf-available/10-accesslog.conf
+    lrwxrwxrwx 1 root root   33 Oct 30 00:11 10-fastcgi.conf -> ../conf-available/10-fastcgi.conf
+    lrwxrwxrwx 1 root root   42 Sep  8  2017 90-javascript-alias.conf -> ../conf-available/90-javascript-ali
+
+modify 10-fastcgi.conf like below
+
+    # /usr/share/doc/lighttpd/fastcgi.txt.gz
+    # http://redmine.lighttpd.net/projects/lighttpd/wiki/Docs:ConfigurationOptions#mod_fastcgi-fastcgi
+
+    server.modules += ( "mod_fastcgi" )
+
+    # ficwww FCGI setting
+    fastcgi.server = (
+    ".fcgi" => (
+        (
+        "socket" => "/tmp/index-fcgi.sock",
+        "bin-path" => "/var/www/ficwww/index.fcgi",
+        "check-local" => "disable",
+        "max-procs" => 1
+        )
+    )
+    )
+
+    fastcgi.debug = 1
+
+    alias.url = (
+    "/static/" => "/var/www/ficwww/static/"
+    )
+
+    url.rewrite-once = (
+    "^(/static($|/.*))$" => "$1",
+    "^(/.*)$" => "/index.fcgi$1",
+    )
+
+then restart lighttpd and test via web browser.
+
 
 ### GUI interface (AS IS)
 This part is still very undergo. (I need certain time to finish this part...)
