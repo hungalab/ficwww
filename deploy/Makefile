@@ -9,9 +9,10 @@ base_install:
 	sudo usermod -a -G gpio www-data
 
 lighttpd:
-	cd /etc/lighttpd
-	sudo ln -s ./conf-available/10-accesslog.conf ./conf-enabled/.
-	sudo ln -s ./conf-available/10-fastcgi.conf ./conf-enabled/.
-	sudo ln -s ./conf-available/10-rewrite.conf ./conf-enabled/.
-	sudo cp /var/www/ficwww/deploy/lighttpd/lighttpd.conf ./
-	sudo cp /var/www/ficwww/deploy/lighttpd/10-fastcgi.conf ./conf-available
+	cd /etc/lighttpd; \
+	ln -s /conf-available/10-accesslog.conf ./conf-enabled/.; \
+	ln -s /conf-available/10-fastcgi.conf ./conf-enabled/.; \
+	ln -s /conf-available/10-rewrite.conf ./conf-enabled/.; \
+	cp /var/www/ficwww/deploy/lighttpd/lighttpd.conf ./; \
+	cp /var/www/ficwww/deploy/lighttpd/10-fastcgi.conf ./conf-available; \
+
