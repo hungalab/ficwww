@@ -74,6 +74,10 @@ For deployment, use lighttpd with fcgi plugin.
 index.fcgi is an example entry point .fcgi script for ficwww.py
 
 #### On Raspbian
+ficwww is totally depends on libfic2 (ficlib2) to control FPGA.
+
+so you need build libfic2 1st and create pyficlib2.so symlink on ficwww directory.
+
 do following commands on root
 
     sudo apt install lighttpd
@@ -85,6 +89,15 @@ do following commands on root
     make
     cd ../
     ln -s libfic2/pyficlib2.so .
+
+Install FSGI server for python
+
+    root@fic08:# sudo pip3 install flup-py3
+    Collecting flup-py3
+      Downloading https://files.pythonhosted.org/packages/d9/95/fc6abf5c8830d97a0493d272d85d3ea63e502772d5de439904435d71d63d/flup_py3-1.0.3-py3-none-any.whl (74kB)
+        100% |████████████████████████████████| 81kB 1.3MB/s
+    Installing collected packages: flup-py3
+    Successfully installed flup-py3-1.0.3
 
 
 modify /etc/lighttpd/lighttpd.conf like below

@@ -29,7 +29,7 @@ $jq(function($){
 	$('#btn_fpga_reset').on('click', function() {
 		if (confirm("Are you sure?")) {
 			$.ajax({
-				url         : '/fpga',
+				url         : 'fpga',
 				type        : 'delete',
 				cache       : false,
 				contentType : 'application/json',
@@ -57,7 +57,7 @@ $jq(function($){
 				"command" : "reset",
 			}
 			$.ajax({
-				url         : '/hls',
+				url         : 'hls',
 				type        : 'post',
 				data        : JSON.stringify(json),
 				cache       : false,
@@ -87,7 +87,7 @@ $jq(function($){
 				"command" : "start",
 			}
 			$.ajax({
-				url         : '/hls',
+				url         : 'hls',
 				type        : 'post',
 				data        : JSON.stringify(json),
 				cache       : false,
@@ -138,7 +138,7 @@ $jq(function($){
 			}
 
 			$.ajax({
-				url         : '/fpga',
+				url         : 'fpga',
 				type        : 'post',
 				data        : JSON.stringify(json),
 				cache       : false,
@@ -183,7 +183,7 @@ $jq(function($){
 		};
 
 		$.ajax({
-			url         : '/regread',
+			url         : 'regread',
 			type        : 'post',
 			cache       : false,
 			contentType : 'application/json',
@@ -234,7 +234,7 @@ $jq(function($){
 		};
 
 		$.ajax({
-			url         : '/regwrite',
+			url         : 'regwrite',
 			type        : 'post',
 			cache       : false,
 			contentType : 'application/json',
@@ -258,7 +258,7 @@ $jq(function($){
 	//----------------------------------------------------------------------------
 	function get_status() {
 		$.ajax({
-			url         : '/status',
+			url         : 'status',
 			type        : 'get',
 			cache       : false,
 			dataType    : 'json',
@@ -437,7 +437,7 @@ $jq(function($){
 		}
 
 		$.ajax({
-			url         : '/switch',
+			url         : 'switch',
 			type        : 'post',
 			cache       : false,
 			contentType : 'application/json',
