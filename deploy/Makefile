@@ -12,6 +12,7 @@ setup_lighttpd:
 	cd /etc/lighttpd/conf-enabled; \
 	ln -s ../conf-available/10-accesslog.conf .; \
 	ln -s ../conf-available/10-rewrite.conf .; \
+	ln -s ../conf-available/10-ficwww.conf .; \
 	cd ../ ; \
 	mv lighttpd.conf lighttpd.conf.orig
 	ln -s /var/www/ficwww/deploy/lighttpd/ficwww-lighttpd.conf /etc/lighttpd/lighttpd.conf; \
