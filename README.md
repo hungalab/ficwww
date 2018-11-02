@@ -171,6 +171,8 @@ modify 10-fastcgi.conf like below
 
 then restart lighttpd and test via web browser.
 
+Note: An example configuration for lighttpd is also attached to example/lighttpd/
+
 
 ### GUI interface (AS IS)
 This part is still very undergo. (I need certain time to finish this part...)
