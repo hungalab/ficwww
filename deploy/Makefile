@@ -14,6 +14,6 @@ lighttpd:
 	ln -s ../conf-available/10-rewrite.conf .; \
 	cd ../ ; \
 	mv lighttpd.conf lighttpd.conf.orig
-	ln -s /var/www/ficwww/deploy/lighttpd/ficwww-lighttpd.conf ./lighttpd.conf; \
-	ln -s /var/www/ficwww/deploy/lighttpd/10-ficwww.conf ./conf-available/.; \
+	ln -s /var/www/ficwww/deploy/lighttpd/ficwww-lighttpd.conf /etc/lighttpd/lighttpd.conf; \
+	ln -s /var/www/ficwww/deploy/lighttpd/10-ficwww.conf /etc/lighttpd/conf-available/.; \
 
