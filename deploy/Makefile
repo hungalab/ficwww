@@ -6,6 +6,7 @@ base_install:
 	sudo apt-get update
 	sudo apt-get install -y python3 python3-flask lighttpd
 	sudo pip3 install flup-py3
+	sudo usermod -a -G gpio www-data
 
 lighttpd:
 	cd /etc/lighttpd
