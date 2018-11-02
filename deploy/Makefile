@@ -1,6 +1,6 @@
 install:
 	make base_install
-	make lighttpd
+	make setup_lighttpd
 
 base_install:
 	sudo apt-get update
@@ -8,7 +8,7 @@ base_install:
 	sudo pip3 install flup-py3
 	sudo usermod -a -G gpio www-data
 
-lighttpd:
+setup_lighttpd:
 	cd /etc/lighttpd/conf-enabled; \
 	ln -s ../conf-available/10-accesslog.conf .; \
 	ln -s ../conf-available/10-rewrite.conf .; \
