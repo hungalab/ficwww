@@ -4,16 +4,8 @@ install:
 
 base_install:
 	sudo apt-get update
-	sudo apt-get install -y git python3 python3-flask lighttpd
+	sudo apt-get install -y python3 python3-flask lighttpd
 	sudo pip3 install flup-py3
-	cd /var/www
-	git clone http://github.com/hungalab/ficwww
-	cd ficwww
-	git clone http://github.com/hungalab/libfic2
-	cd libfic2
-	make clean && make
-	cd ../
-	ln -s libfic2/pyficlib2.so .
 
 lighttpd:
 	cd /etc/lighttpd
