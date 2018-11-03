@@ -11,7 +11,7 @@
 	<body>
 		<h2> Flow-in-Cloud Board (on {{host}})</h2> 
 		<img border=0 src="/static/img/hlab.png" width="200px"><br>
-		<b>WE ACCELERATE THE FUTURE ?</b>
+		<b>CAN WE ACCELERATE THE FUTURE ?</b>
 		<hr>
 
 		<h3> FiC hostname : {{ host }} </h3>
@@ -22,6 +22,7 @@
 
 			<h3>Status</h3>
 			<span class="square_btn_orange" id="btn_reflesh">REFLESH</span>
+			<span id="status_msg"></span>
 			<br><br>
 			PW_OK : <div class="led_green" id="led_power"></div> /
 			DONE : <div class="led_green" id="led_done"></div> /
@@ -30,7 +31,7 @@
 			<hr>
 
 			<h3>Control</h3>
-			<!-- <div class="square_btn_orange" id="btn_fpga_reset">FPGA RESET</div> -->
+			<div class="square_btn_orange" id="btn_fpga_reset">FPGA RESET</div>
 			<!-- <div class="square_btn_orange" id="btn_fpga_startup">FPGA STARTUP</div> -->
 			<div class="square_btn_orange" id="btn_hls_reset">HLS MODULE RESET</div>
 			<div class="square_btn_orange" id="btn_hls_start">HLS MODULE START</div>

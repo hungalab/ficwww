@@ -125,19 +125,27 @@ def rest_fpga_post():
         ST['fpga']['done'] = False
 
         if ST['fpga']['mode'] == 'sm16':
-            Fic.prog_sm16(data=bs, progmode=0)
+            if Fic.prog_sm16(data=bs, progmode=0) == 0:
+                raise Exception
+
             ST['fpga']['ifbit'] = 8
 
         elif ST['fpga']['mode'] == 'sm16pr':
-            Fic.prog_sm16(data=bs, progmode=1)
+            if Fic.prog_sm16(data=bs, progmode=1) == 0:
+                raise Exception
+
             ST['fpga']['ifbit'] = 8
 
         elif ST['fpga']['mode'] == 'sm8':
-            Fic.prog_sm8(data=bs, progmode=0)
+            if Fic.prog_sm8(data=bs, progmode=0) == 0:
+                raise Exception
+
             ST['fpga']['ifbit'] = 4
 
         elif ST['fpga']['mode'] == 'sm8pr':
-            Fic.prog_sm8(data=bs, progmode=1)
+            if Fic.prog_sm8(data=bs, progmode=1) == 0:
+                raise Exception
+
             ST['fpga']['ifbit'] = 4
 
         # Set status

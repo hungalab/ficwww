@@ -27,7 +27,7 @@ $jq(function($){
 	// FPGA reset button click
 	//-------------------------------------------------------------------------
 	$('#btn_fpga_reset').on('click', function() {
-		if (confirm("Are you sure?")) {
+		if (confirm("FPGA will be initilizing, are you sure?")) {
 			$.ajax({
 				url         : 'fpga',
 				type        : 'delete',
@@ -127,15 +127,37 @@ $jq(function($){
 			$('#upload_status').text("Converting base64...");
 			base64_data = reader.result.split(',').pop();
 
-			$('#upload_status').text("Burn FPGA...");
-			$('#upload_spinner').css('visibility', 'visible');
-
 			// Program mode
+			var prog_mode = $('input[name=fpga_cfg_mode]:checked').val() 
 			var json = {
-				"mode": $('input[name=fpga_cfg_mode]:checked').val(),
+				"mode": prog_mode,
 				"bitname": file.name,
 				"bitstream": base64_data,
 			}
+
+			$('#upload_status').text("Burn FPGA...");
+			$('#upload_spinner').css('visibility', 'visible');
+
+			var ajax_timeout = 60000;
+			switch (prog_mode) {
+				case 'sm16':
+				case 'sm16pr':
+					ajax_timeout = 60000;	// Approx 60sec
+					break;
+
+				case 'sm8':
+				case 'sm8pr':
+					ajax_timeout = 90000;	// Approx 90sec
+					break;
+			}
+
+			var to = ajax_timeout / 1000;
+			var ts = setInterval(
+				function () {
+					to -= 1;
+					$('#upload_status').text("Burn FPGA... wait " + to + "s...");
+				}, 1000
+			);
 
 			$.ajax({
 				url         : 'fpga',
@@ -144,16 +166,25 @@ $jq(function($){
 				cache       : false,
 				contentType : 'application/json',
 				dataType    : 'json',
-				timeout     : 120000,
+				timeout     : ajax_timeout,
 			})
 			.done(function (form_data, textStatus, jqXHR) {
-				$('#upload_status').text("Done!");
-				$('#upload_spinner').css('visibility', 'hidden');
-				get_status();
+				clearInterval(ts);
+				if (form_data['return'] == 'success') {
+					$('#upload_status').text("Successfully Done!");
+					$('#upload_spinner').css('visibility', 'hidden');
+					get_status();
+				} else {
+					$('#upload_status').text("Failed!");
+					$('#upload_spinner').css('visibility', 'hidden');
+				}
 			})
 			.fail(function (jqXHR, textStatus, errorThrown) {
 				//$('#inp_fpga_upload_file').val('');
-				alert('fail');
+				clearInterval(ts);
+				$('#upload_status').text("Failed! (Ajax Timeout)");
+				$('#upload_spinner').css('visibility', 'hidden');
+				alert('FPGA configuration failed');
 			});
 		}
 	});
@@ -311,8 +342,11 @@ $jq(function($){
 				}
 
 			} else {
-				alert("get_status failed")
+				$('#status_msg').text("get_status failed. FPGA may not configured yet?");		// configuration time
+				//alert("get_status failed")
 			}
+			var date = new Date()
+			$('#status_msg').text("Status at " + date.toUTCString());		// configuration time
 
 		})
 		.fail(function(jqXHR, textStatus, errorThrown){
