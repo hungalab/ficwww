@@ -331,7 +331,7 @@ $jq(function($){
 			return;
 		}
 		$(this).removeClass('inp_val_error');
-		sw_table['slots'] = v;
+		sw_table['ports'] = v;
 		set_swconf_dom();
 	});
 
@@ -391,7 +391,11 @@ $jq(function($){
 				elem.append('Slot' + s.toString() +
 					': <input type="text" class="inp_sw_config" id="' + s_id + '"> &nbsp;');
 				
-				$('#' + s_id).val(sw_table['outputs']['port'+p]['slot'+s]);
+				try {
+					$('#' + s_id).val(sw_table['outputs']['port'+p]['slot'+s]);
+				} catch {
+					// Nothing to do
+				}
 			}
 		}
 	}
