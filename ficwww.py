@@ -276,8 +276,10 @@ def rest_hls_post():
             if ST['hls']['status'] == 'stop':
                 return jsonify({"return" : "failed", "error" : "HLS is not running yet"})
 
+            hls_data_count = json['count']
+
             Fic.gpio_open()
-            hls_data = Fic.hls_receive4()  # Todo: is any 8bit I/F?
+            hls_data = Fic.hls_receive4(hls_data_count)  # Todo: is any 8bit I/F?
             Fic.gpio_close()
 
             return jsonify({"return": "success", "data": hls_data})

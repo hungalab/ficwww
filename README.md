@@ -285,6 +285,7 @@ Control HLS module
 Send command or data to HLS module
 
 - JSON format 
+   - reset/start
     ```
     {
       'command': '<reset | start | receive4 | send4>',
@@ -292,8 +293,24 @@ Send command or data to HLS module
     }
     ```
 
+    - send4
+    ```
+    {
+      'command': 'send4',
+      'data' : [0x80, 0x80, 0x80,...,],
+    }
+    ```
+
+    - receive4
+    ```
+    {
+      'command': 'receive4',
+      'count' : n
+    }
+    ```
+
 - Return 
-    - if command is reset / start / send4
+    - reset/start/send4
     ```
     {
       'return': '<success | failed>',
@@ -301,7 +318,7 @@ Send command or data to HLS module
     }
     ```
 
-    - if command is receive4
+    - receive4
     ```
     {
       'return': '<success | failed>',

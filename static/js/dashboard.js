@@ -53,7 +53,6 @@ $jq(function($){
 	$('#btn_hls_reset').on('click', function() {
 		if (confirm("Are you sure?")) {
 			var json = {
-				"type"    : "command",
 				"command" : "reset",
 			}
 			$.ajax({
@@ -83,7 +82,6 @@ $jq(function($){
 	$('#btn_hls_start').on('click', function() {
 		if (confirm("Are you sure?")) {
 			var json = {
-				"type"    : "command",
 				"command" : "start",
 			}
 			$.ajax({
