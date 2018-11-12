@@ -18,6 +18,7 @@
         - [Required packages](#required-packages)
         - [Easy Run and Debug](#easy-run-and-debug)
         - [Deployment](#deployment)
+            - [On Raspbian](#on-raspbian)
         - [GUI interface (AS IS)](#gui-interface-as-is)
 - [API Reference](#api-reference)
     - [RESTful API](#restful-api)
@@ -29,9 +30,8 @@
             - [POST METHOD](#post-method-1)
         - [/hls](#hls)
             - [POST METHOD](#post-method-2)
-            - [GET METHOD](#get-method-1)
         - [/status](#status)
-            - [GET METHOD](#get-method-2)
+            - [GET METHOD](#get-method-1)
         - [/regread](#regread)
             - [POST METHOD](#post-method-3)
         - [/regwrite](#regwrite)
@@ -287,41 +287,28 @@ Send command or data to HLS module
 - JSON format 
     ```
     {
-      'type'   : '<command | data>',
-      'command': '<reset | start>',
+      'command': '<reset | start | receive4 | send4>',
       'data' : [0x80, 0x80, 0x80,...,],
     }
     ```
 
 - Return 
+    - if command is reset / start / send4
     ```
     {
-      'error' : '<error message if present>',
       'return': '<success | failed>',
+      'error' : '<error message if present>',
     }
     ```
 
-#### GET METHOD
-Receive data from HLS module
-
-Note: you need start HLS module before this.
-
-- JSON format
+    - if command is receive4
     ```
     {
-      'count' : '<number of elements to read>
+      'return': '<success | failed>',
+      'error' : '<error message if present>',
+      'data'  : [0x00, 0x00, 0x00 ... 0x00],
     }
     ```
-
-- Return 
-  ```
-  {
-    'data'  : [0x00, 0x00, 0x00 ... 0x00]
-    'error' : '<error message if present>'
-    'return': 'success' | 'failed'
-  }
-  ```
-
 ----
 
 ### /status

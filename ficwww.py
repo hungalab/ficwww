@@ -249,40 +249,51 @@ def rest_hls_post():
 
     json = request.json
     try:
-        hls_type = json['type']
-        if hls_type == 'command':
-            hls_cmd = json['command']
-
+        hls_cmd = json['command']
+        if hls_cmd == 'start':
             Fic.gpio_open()
-
-            if hls_cmd == 'start':
-                if ST['fpga']['ifbit'] == 8:
+            if ST['fpga']['ifbit'] == 8:
                     Fic.hls_start8()
 
-                if ST['fpga']['ifbit'] == 4:
-                    Fic.hls_start4()
+            if ST['fpga']['ifbit'] == 4:
+                Fic.hls_start4()
 
-                ST['hls']['status'] = 'start'
-
-            elif hls_cmd == 'reset':
-                if ST['fpga']['ifbit'] == 8:
-                    Fic.hls_reset8()
-
-                if ST['fpga']['ifbit'] == 4:
-                    Fic.hls_reset4()
-
-                ST['hls']['status'] = 'stop'
-
+            ST['hls']['status'] = 'start'
             Fic.gpio_close()
 
-        elif hls_type == 'data':
+        elif hls_cmd == 'reset':
+            Fic.gpio_open()
+            if ST['fpga']['ifbit'] == 8:
+                Fic.hls_reset8()
+
+            if ST['fpga']['ifbit'] == 4:
+                Fic.hls_reset4()
+
+            ST['hls']['status'] = 'stop'
+            Fic.gpio_close()
+        
+        elif hls_cmd == 'receive4':
+            if ST['hls']['status'] == 'stop':
+                return jsonify({"return" : "failed", "error" : "HLS is not running yet"})
+
+            Fic.gpio_open()
+            hls_data = Fic.hls_receive4()  # Todo: is any 8bit I/F?
+            Fic.gpio_close()
+
+            return jsonify({"return": "success", "data": hls_data})
+        
+        elif hls_cmd == 'send4':
             if ST['hls']['status'] == 'stop':
                 return jsonify({"return" : "failed", "error" : "HLS is not running yet"})
 
             hls_data = json['data']
+
             Fic.gpio_open()
             Fic.hls_send4(bytes(hls_data))  # Todo: is any 8bit I/F?
             Fic.gpio_close()
+
+        else:
+            return jsonify({"return" : "failed", "error" : "Unknown command"})
 
     except Exception as e:
         print(e)
