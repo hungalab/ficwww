@@ -131,6 +131,7 @@ $jq(function($){
 				"mode": prog_mode,
 				"bitname": file.name,
 				"bitstream": base64_data,
+				"memo" : $('#inp_fpga_memo').val(),
 			}
 
 			$('#upload_status').text("Burn FPGA...");
@@ -345,6 +346,7 @@ $jq(function($){
 			}
 			var date = new Date()
 			$('#status_msg').text("Status at " + date.toUTCString());		// configuration time
+			$('#conf_memo').text(status['fpga']['memo']);					// FPGA configuration memo
 
 		})
 		.fail(function(jqXHR, textStatus, errorThrown){

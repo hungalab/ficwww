@@ -32,11 +32,12 @@ import pyficlib2 as Fic
 #------------------------------------------------------------------------------
 ST = {
     "fpga" : {
-        "mode" : "",        # configured mode
-        "bitname" : "unknown",     # configure bitfile name
-        "conftime" : "----/--/-- --:--:--",    # configure time
-        "ifbit" : 8,        # Interface bit width
-        "done": False,     # configure done
+        "mode" : "",                            # configured mode
+        "bitname" : "unknown",                  # configure bitfile name
+        "conftime" : "----/--/-- --:--:--",     # configure time
+        "memo" : "",                            # memo
+        "ifbit" : 8,                            # Interface bit width
+        "done": False,                          # configure done
     },
     "switch" : {
         "ports" : 4,
@@ -151,6 +152,7 @@ def rest_fpga_post():
         # Set status
         ST['fpga']['conftime'] = datetime.datetime.now()
         ST['fpga']['done'] = Fic.get_done()
+        ST['fpga']['memo'] = json['memo']
         Fic.gpio_close()
 
     except:
@@ -179,6 +181,7 @@ def rest_fpga_delete():
     ST['fpga']['bitname'] = ''
     ST['fpga']['conftime'] = ''
     ST['fpga']['done'] = False
+    ST['fpga']['memo'] = ''
 
     return jsonify({"return" : "success"})
 

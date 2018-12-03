@@ -197,12 +197,14 @@ Perform FPGA configuration
     - mode : FPGA configuration mode (select map x16 or x8 and partial reconfiguration)
     - bitname : name of bitstream file e.g. ring.bin
     - bitstream : BASE64 encoded FPGA bitstream file
+    - user : FPGA configued username (for memo)
 
     ```
     {
-      'mode': '<sm16 | sm8 | sm16pr | sm8pr>'
+      'mode'      : '<sm16 | sm8 | sm16pr | sm8pr>'
       'bitname'   : '<name>'
       'bitstream' : '<base64 encoded FPGA bitfile>'
+      'user'      : '<username>'
     }
     ```
 
