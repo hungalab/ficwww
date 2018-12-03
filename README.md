@@ -9,35 +9,7 @@
 ---
 ## Table of contents
 
-<!-- TOC -->
-
-- [ficwww](#ficwww)
-    - [fic board www GUI interface](#fic-board-www-gui-interface)
-    - [Table of contents](#table-of-contents)
-    - [Instrallation](#instrallation)
-        - [Required packages](#required-packages)
-        - [Easy Run and Debug](#easy-run-and-debug)
-        - [Deployment](#deployment)
-            - [On Raspbian](#on-raspbian)
-        - [GUI interface (AS IS)](#gui-interface-as-is)
-- [API Reference](#api-reference)
-    - [RESTful API](#restful-api)
-        - [/fpga](#fpga)
-            - [POST METHOD](#post-method)
-            - [GET METHOD](#get-method)
-            - [DELETE METHOD](#delete-method)
-        - [/switch](#switch)
-            - [POST METHOD](#post-method-1)
-        - [/hls](#hls)
-            - [POST METHOD](#post-method-2)
-        - [/status](#status)
-            - [GET METHOD](#get-method-1)
-        - [/regread](#regread)
-            - [POST METHOD](#post-method-3)
-        - [/regwrite](#regwrite)
-            - [POST METHOD](#post-method-4)
-
-<!-- /TOC -->
+<!-- TOC -->autoauto- [ficwww](#ficwww)auto    - [fic board www GUI interface](#fic-board-www-gui-interface)auto    - [Table of contents](#table-of-contents)auto    - [Instrallation](#instrallation)auto        - [Required packages](#required-packages)auto        - [Easy Run and Debug](#easy-run-and-debug)auto        - [Deployment](#deployment)auto            - [On Raspbian](#on-raspbian)auto        - [GUI interface (AS IS)](#gui-interface-as-is)auto- [API Reference](#api-reference)auto    - [RESTful API](#restful-api)auto        - [/fpga](#fpga)auto            - [POST METHOD](#post-method)auto            - [GET METHOD](#get-method)auto            - [DELETE METHOD](#delete-method)auto        - [/switch](#switch)auto            - [POST METHOD](#post-method-1)auto        - [/hls](#hls)auto            - [POST METHOD](#post-method-2)auto        - [/status](#status)auto            - [GET METHOD](#get-method-1)auto        - [/regread](#regread)auto            - [POST METHOD](#post-method-3)auto        - [/regwrite](#regwrite)auto            - [POST METHOD](#post-method-4)autoauto<!-- /TOC -->
 
 ---
 
@@ -197,14 +169,14 @@ Perform FPGA configuration
     - mode : FPGA configuration mode (select map x16 or x8 and partial reconfiguration)
     - bitname : name of bitstream file e.g. ring.bin
     - bitstream : BASE64 encoded FPGA bitstream file
-    - user : FPGA configued username (for memo)
+    - memo: Memo area to leave a message after FPGA configuration. (e.g to display username who are using the board)
 
     ```
     {
       'mode'      : '<sm16 | sm8 | sm16pr | sm8pr>'
       'bitname'   : '<name>'
       'bitstream' : '<base64 encoded FPGA bitfile>'
-      'user'      : '<username>'
+      'memo'      : '<memo text>'
     }
     ```
 

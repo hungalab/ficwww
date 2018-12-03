@@ -28,6 +28,7 @@
 			DONE : <div class="led_green" id="led_done"></div> /
 			CONF : <span id="bit_file_name"></span> /
 			CONF TIME : <span id="config_time"></span> /
+			MEMO : <span id="conf_memo"></span>
 			<hr>
 
 			<h3>Control</h3>
@@ -45,6 +46,9 @@
 			Selectmap x16 (PR) <input type="radio" name="fpga_cfg_mode" value="sm16pr"> &nbsp;&nbsp;
 			Selectmap x8 <input type="radio" name="fpga_cfg_mode" value="sm8"> &nbsp;&nbsp;
 			Selectmap x8 (PR)<input type="radio" name="fpga_cfg_mode" value="sm8pr">
+			<br>
+			<br>
+			Memo for this FPGA configuration: <input type="text" class="inp_text" id="inp_fpga_memo">
 
 			<form id="frm_fpga_upload">
 				<label for="inp_fpga_upload" class="square_btn_blue">
@@ -57,6 +61,7 @@
 				<span id="upload_status"></span>
 				<img id="upload_spinner" style="visibility:hidden;" border=0 src="/static/img/fire.gif" width=32px height=32px>
 			</form>
+
 		</div>
 
 		<!---------------- Switch control box ---------------->
