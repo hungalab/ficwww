@@ -143,8 +143,16 @@ modify 10-fastcgi.conf like below
 
 then restart lighttpd and test via web browser.
 
-Note: An example configuration for lighttpd is also attached to example/lighttpd/
+Note1: An example configuration for lighttpd is also attached to example/lighttpd/
 
+Note2: see a deployment makefile under deploy/Makefile
+
+Then use like this:
+
+```
+cd  <pass to ficwww>
+make -f deploy/Makefile install
+```
 
 ### GUI interface (AS IS)
 This part is still very undergo. (I need certain time to finish this part...)

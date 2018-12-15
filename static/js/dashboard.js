@@ -350,7 +350,7 @@ $jq(function($){
 
 		})
 		.fail(function(jqXHR, textStatus, errorThrown){
-			alert("Ajax Error")
+			//alert("Ajax Error")
 			console.log('ajax error at get_status');
 		});
 	}
