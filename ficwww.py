@@ -28,9 +28,13 @@ import pyficlib2 as Fic
 #import re
 
 #------------------------------------------------------------------------------
+MINIMUM_UPDATE_SEC = 10                         # minimum status update period
+
+#------------------------------------------------------------------------------
 # Status table
 #------------------------------------------------------------------------------
 ST = {
+    "last_update" : 0,                          # last update
     "fpga" : {
         "mode" : "",                            # configured mode
         "bitname" : "unknown",                  # configure bitfile name
@@ -312,27 +316,30 @@ def rest_hls_post():
 #------------------------------------------------------------------------------
 @app.route('/status', methods=['GET'])
 def rest_status_get():
-    try:
-        Fic.gpio_open()
+    if (time.time() - ST['last_update']) > MINIMUM_UPDATE_SEC:
+        try:
+            Fic.gpio_open()
 
-        if ST['fpga']['ifbit'] == 8:
-            ST['board']['led'] = Fic.rb8(0xfffb)    # read LED status
-            ST['board']['dipsw'] = Fic.rb8(0xfffc)  # read DIPSW status
-            ST['board']['link'] = Fic.rb8(0xfffd)   # read Link status
+            if ST['fpga']['ifbit'] == 8:
+                ST['board']['led'] = Fic.rb8(0xfffb)    # read LED status
+                ST['board']['dipsw'] = Fic.rb8(0xfffc)  # read DIPSW status
+                ST['board']['link'] = Fic.rb8(0xfffd)   # read Link status
 
-        if ST['fpga']['ifbit'] == 4:
-            ST['board']['led'] = Fic.rb4(0xfffb)    # read LED status
-            ST['board']['dipsw'] = Fic.rb4(0xfffc)  # read DIPSW status
-            ST['board']['link'] = Fic.rb4(0xfffd)   # read Link status
-        
-        ST['board']['done'] = Fic.get_done()
-        ST['board']['power'] = Fic.get_power()
+            if ST['fpga']['ifbit'] == 4:
+                ST['board']['led'] = Fic.rb4(0xfffb)    # read LED status
+                ST['board']['dipsw'] = Fic.rb4(0xfffc)  # read DIPSW status
+                ST['board']['link'] = Fic.rb4(0xfffd)   # read Link status
+            
+            ST['board']['done'] = Fic.get_done()
+            ST['board']['power'] = Fic.get_power()
 
-        Fic.gpio_close()
+            Fic.gpio_close()
 
-    except:
-        Fic.gpio_close()
-        return jsonify({"return" : "failed", "status" : ST})
+        except:
+            Fic.gpio_close()
+            return jsonify({"return" : "failed", "status" : ST})
+
+        ST['last_update'] = time.time()
 
     return jsonify({"return" : "success", "status" : ST})
 
