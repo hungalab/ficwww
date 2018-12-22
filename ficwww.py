@@ -319,19 +319,20 @@ def rest_status_get():
     if (time.time() - ST['last_update']) > MINIMUM_UPDATE_SEC:
         try:
             Fic.gpio_open()
-
-            if ST['fpga']['ifbit'] == 8:
-                ST['board']['led'] = Fic.rb8(0xfffb)    # read LED status
-                ST['board']['dipsw'] = Fic.rb8(0xfffc)  # read DIPSW status
-                ST['board']['link'] = Fic.rb8(0xfffd)   # read Link status
-
-            if ST['fpga']['ifbit'] == 4:
-                ST['board']['led'] = Fic.rb4(0xfffb)    # read LED status
-                ST['board']['dipsw'] = Fic.rb4(0xfffc)  # read DIPSW status
-                ST['board']['link'] = Fic.rb4(0xfffd)   # read Link status
-            
-            ST['board']['done'] = Fic.get_done()
             ST['board']['power'] = Fic.get_power()
+
+            if ST['board']['power'] == 1:
+                ST['board']['done'] = Fic.get_done()
+                if ST['board']['done'] == 1:
+                    if ST['fpga']['ifbit'] == 8:
+                        ST['board']['led'] = Fic.rb8(0xfffb)    # read LED status
+                        ST['board']['dipsw'] = Fic.rb8(0xfffc)  # read DIPSW status
+                        ST['board']['link'] = Fic.rb8(0xfffd)   # read Link status
+
+                    if ST['fpga']['ifbit'] == 4:
+                        ST['board']['led'] = Fic.rb4(0xfffb)    # read LED status
+                        ST['board']['dipsw'] = Fic.rb4(0xfffc)  # read DIPSW status
+                        ST['board']['link'] = Fic.rb4(0xfffd)   # read Link status
 
             Fic.gpio_close()
 
