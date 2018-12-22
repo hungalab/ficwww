@@ -320,7 +320,6 @@ def rest_status_get():
         try:
             Fic.gpio_open()
             ST['board']['power'] = Fic.get_power()
-
             if ST['board']['power'] == 1:
                 ST['board']['done'] = Fic.get_done()
                 if ST['board']['done'] == 1:
