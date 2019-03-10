@@ -320,18 +320,26 @@ def rest_status_get():
         try:
             Fic.gpio_open()
             ST['board']['power'] = Fic.get_power()
-            if ST['board']['power'] == 1:
-                ST['board']['done'] = Fic.get_done()
-                if ST['board']['done'] == 1:
-                    if ST['fpga']['ifbit'] == 8:
-                        ST['board']['led'] = Fic.rb8(0xfffb)    # read LED status
-                        ST['board']['dipsw'] = Fic.rb8(0xfffc)  # read DIPSW status
-                        ST['board']['link'] = Fic.rb8(0xfffd)   # read Link status
 
-                    if ST['fpga']['ifbit'] == 4:
-                        ST['board']['led'] = Fic.rb4(0xfffb)    # read LED status
-                        ST['board']['dipsw'] = Fic.rb4(0xfffc)  # read DIPSW status
-                        ST['board']['link'] = Fic.rb4(0xfffd)   # read Link status
+            if ST['board']['power'] == 1:       # if board power is on
+                ST['board']['done'] = Fic.get_done()
+                if ST['board']['done'] == 1:    # FPGA is configured
+                    try:
+                        # Trying to read via fic 4bit interface
+                        if ST['fpga']['ifbit'] == 8:
+                            ST['board']['led'] = Fic.rb8(0xfffb)    # read LED status
+                            ST['board']['dipsw'] = Fic.rb8(0xfffc)  # read DIPSW status
+                            ST['board']['link'] = Fic.rb8(0xfffd)   # read Link status
+
+                        if ST['fpga']['ifbit'] == 4:
+                            ST['board']['led'] = Fic.rb4(0xfffb)    # read LED status
+                            ST['board']['dipsw'] = Fic.rb4(0xfffc)  # read DIPSW status
+                            ST['board']['link'] = Fic.rb4(0xfffd)   # read Link status
+
+                    except:
+                        # if readout via fic interface failed
+                        Fic.gpio_close()
+                        return jsonify({"return" : "success", "status" : ST})
 
             Fic.gpio_close()
 
