@@ -1,7 +1,6 @@
-install:
-	make base_install
-	make setup_ficlib2
-	make setup_lighttpd
+.PHONY: install base_install setup_lighttpd setup_ficlib2 update
+
+install: setup_lighttpd
 
 base_install:
 	apt-get update
@@ -9,7 +8,7 @@ base_install:
 	pip3 install flup-py3
 	usermod -a -G gpio www-data
 
-setup_lighttpd:
+setup_lighttpd: setup_ficlib2
 	cd /etc/lighttpd/conf-enabled; \
 	ln -s ../conf-available/10-accesslog.conf .; \
 	ln -s ../conf-available/10-rewrite.conf .; \
@@ -19,7 +18,7 @@ setup_lighttpd:
 	ln -s /var/www/ficwww/deploy/lighttpd/ficwww-lighttpd.conf /etc/lighttpd/lighttpd.conf; \
 	ln -s /var/www/ficwww/deploy/lighttpd/10-ficwww.conf /etc/lighttpd/conf-available/.; \
 
-setup_ficlib2:
+setup_ficlib2: base_install
 	git clone https://github.com/hungalab/libfic2.git
 	cd libfic2 && make
 	ln -s libfic2/pyficlib2.so .
