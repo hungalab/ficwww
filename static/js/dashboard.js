@@ -188,6 +188,39 @@ $jq(function($){
 		}
 	});
 
+	//-------------------------------------------------------------------------
+	// RPi3 command run
+	//-------------------------------------------------------------------------
+	$('#btn_run_cmd').on('click', function() {
+		if (confirm("Are you sure?")) {
+			var json = {
+				"command": $('#inp_run_cmd').val()
+			}
+			$.ajax({
+				url         : 'runcmd',
+				type        : 'post',
+				data        : JSON.stringify(json),
+				cache       : false,
+				contentType : 'application/json',
+				dataType    : 'json',
+				timeout     : 10000
+			})
+			.done(function(data, textStatus, jqXHR){
+				if (data['return'] == 'success') {
+					sout = data['stdout']
+					serr = data['stderr']
+					$('#txt_cmd_result').val(sout + serr)
+				} else {
+					$('#txt_cmd_result').val("Command failed")
+				}
+			})
+			.fail(function(jqXHR, textStatus, errorThrown){
+				alert('AJAX fail');
+			});
+		}
+	});
+
+
 	//----------------------------------------------------------------------------
 	// Memory read/write
 	//----------------------------------------------------------------------------
@@ -315,6 +348,9 @@ $jq(function($){
 					$('#led_done').removeClass('led_green_on');
 				}
 
+				// Board ID
+				$('#board_id').text(status['board']['id']);
+
 				// FPGA configuration
 				$('#bit_file_name').text(status['fpga']['bitname']);	// bitfilename
 				$('#config_time').text(status['fpga']['conftime']);		// configuration time
@@ -338,6 +374,15 @@ $jq(function($){
 					$('#led_1').addClass('led_red_on');
 				} else {
 					$('#led_1').removeClass('led_red_on');
+				}
+
+				// Channel linkup
+				for(var i=0; i<8; i++) {
+					if (status['board']['channel'] & i) {
+						$('#led_ch'+i).addClass('led_green_on');
+					} else {
+						$('#led_ch'+i).removeClass('led_green_on');
+					}
 				}
 
 			} else {

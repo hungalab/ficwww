@@ -7,6 +7,9 @@ import time, datetime
 import json
 import base64
 
+import subprocess
+from subprocess import Popen
+
 from flask import Flask, render_template, jsonify, request, abort
 #from flask_restful import Resource, Api, reqparse
 
@@ -28,6 +31,12 @@ import pyficlib2 as Fic
 #import re
 
 #------------------------------------------------------------------------------
+# Note:
+# FIX190316: ifbit maybe 4bit fixed. nobody use 8bit interface
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+ENABLE_RUNCMD_API = True                        # If enable RUNCMD_API
 MINIMUM_UPDATE_SEC = 10                         # minimum status update period
 
 #------------------------------------------------------------------------------
@@ -40,7 +49,7 @@ ST = {
         "bitname" : "unknown",                  # configure bitfile name
         "conftime" : "----/--/-- --:--:--",     # configure time
         "memo" : "",                            # memo
-        "ifbit" : 8,                            # Interface bit width
+        "ifbit" : 4,                            # Interface bit width
         "done": False,                          # configure done
     },
     "switch" : {
@@ -70,6 +79,12 @@ ST = {
         "link" : 0,
         "power" : False,
         "done" : False,
+        "channel" : 0x0000,
+        "id" : 0,
+        "packet" : {
+            "in0": 0, "in1": 0, "in2": 0, "in3": 0,
+            "out0": 0, "out1": 0, "out2": 0, "out3": 0,
+        }
     },
 }
 
@@ -133,25 +148,25 @@ def rest_fpga_post():
             if Fic.prog_sm16(data=bs, progmode=0) == 0:
                 raise Exception
 
-            ST['fpga']['ifbit'] = 8
+            #ST['fpga']['ifbit'] = 8    # FIX190316
 
         elif ST['fpga']['mode'] == 'sm16pr':
             if Fic.prog_sm16(data=bs, progmode=1) == 0:
                 raise Exception
 
-            ST['fpga']['ifbit'] = 8
+            #ST['fpga']['ifbit'] = 8    # FIX190316
 
         elif ST['fpga']['mode'] == 'sm8':
             if Fic.prog_sm8(data=bs, progmode=0) == 0:
                 raise Exception
 
-            ST['fpga']['ifbit'] = 4
+            #ST['fpga']['ifbit'] = 4    # FIX190316
 
         elif ST['fpga']['mode'] == 'sm8pr':
             if Fic.prog_sm8(data=bs, progmode=1) == 0:
                 raise Exception
 
-            ST['fpga']['ifbit'] = 4
+            #ST['fpga']['ifbit'] = 4    # FIX190316
 
         # Set status
         ST['fpga']['conftime'] = datetime.datetime.now()
@@ -330,11 +345,21 @@ def rest_status_get():
                             ST['board']['led'] = Fic.rb8(0xfffb)    # read LED status
                             ST['board']['dipsw'] = Fic.rb8(0xfffc)  # read DIPSW status
                             ST['board']['link'] = Fic.rb8(0xfffd)   # read Link status
+                            ST['board']['id'] = Fic.rb8(0xfffc)     # read board ID
+                            ST['board']['channel'] = (Fic.rb8(0xfff9)<<8|Fic.rb8(0xfffa)) # Channel linkup
+
+                            # ST['board']['packet']['in0']  = (Fic.rb8(0xff03)<<24|Fic.rb8(0xff02)<<16|Fic.rb8(0xff01)<<8|Fic.rb8(0xff00))
+                            # ST['board']['packet']['in1']  = (Fic.rb8(0xff07)<<24|Fic.rb8(0xff06)<<16|Fic.rb8(0xff05)<<8|Fic.rb8(0xff04))
+                            # ST['board']['packet']['in2']  = (Fic.rb8(0xff13)<<24|Fic.rb8(0xff12)<<16|Fic.rb8(0xff11)<<8|Fic.rb8(0xff10))
+                            # ST['board']['packet']['in3']  = (Fic.rb8(0xff1f)<<24|Fic.rb8(0xff02)<<16|Fic.rb8(0xff01)<<8|Fic.rb8(0xff00))
+                            # ST['board']['packet']['out0'] = (Fic.rb8(0xff23)<<24|Fic.rb8(0xff22)<<16|Fic.rb8(0xff21)<<8|Fic.rb8(0xff20))
 
                         if ST['fpga']['ifbit'] == 4:
                             ST['board']['led'] = Fic.rb4(0xfffb)    # read LED status
                             ST['board']['dipsw'] = Fic.rb4(0xfffc)  # read DIPSW status
                             ST['board']['link'] = Fic.rb4(0xfffd)   # read Link status
+                            ST['board']['id'] = Fic.rb4(0xfffc)     # read board ID
+                            ST['board']['channel'] = (Fic.rb4(0xfff9)<<8|Fic.rb4(0xfffa)) # Channel linkup
 
                     except:
                         # if readout via fic interface failed
@@ -414,6 +439,32 @@ def rest_regread():
         return jsonify({"return" : "failed"})
 
     return jsonify({"return" : "success", "data" : data})
+
+#------------------------------------------------------------------------------
+# API for command run
+#------------------------------------------------------------------------------
+@app.route('/runcmd', methods=['POST'])
+def rest_runcmd():
+    # Check json 
+    if not request.is_json:
+        abort(400)
+
+    if ENABLE_RUNCMD_API == False:
+        print("ERROR: This feature is not enabled")
+        return jsonify({"return": "failed"})
+
+    json = request.json
+    try:
+        cmd = json['command']
+        proc = Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        sout, serr = proc.communicate(timeout=5)
+
+    except Exception as e:
+        print(e)
+        return jsonify({"return": "failed"})
+
+#    return jsonify({"return" : "success", "data" : data})
+    return jsonify({"return": "success", "stdout": sout, "stderr": serr})
 
 #------------------------------------------------------------------------------
 if __name__ == "__main__":
