@@ -8,8 +8,37 @@
 
 ---
 ## Table of contents
-<!-- TOC -->autoauto- [ficwww](#ficwww)auto    - [fic board www GUI interface](#fic-board-www-gui-interface)auto    - [Table of contents](#table-of-contents)auto    - [Instrallation](#instrallation)auto        - [Required packages](#required-packages)auto        - [Easy Run and Debug](#easy-run-and-debug)auto        - [Deployment](#deployment)auto            - [On Raspbian](#on-raspbian)auto        - [GUI interface (AS IS)](#gui-interface-as-is)auto- [API Reference](#api-reference)auto    - [RESTful API](#restful-api)auto        - [/fpga](#fpga)auto            - [POST METHOD](#post-method)auto            - [GET METHOD](#get-method)auto            - [DELETE METHOD](#delete-method)auto        - [/switch](#switch)auto            - [POST METHOD](#post-method-1)auto        - [/hls](#hls)auto            - [POST METHOD](#post-method-2)auto        - [/status](#status)auto            - [GET METHOD](#get-method-1)auto        - [/regread](#regread)auto            - [POST METHOD](#post-method-3)auto        - [/regwrite](#regwrite)auto            - [POST METHOD](#post-method-4)auto        - [/runcmd](#runcmd)auto            - [POST METHOD](#post-method-5)autoauto<!-- /TOC -->
+<!-- TOC -->
 
+- [ficwww](#ficwww)
+    - [fic board www GUI interface](#fic-board-www-gui-interface)
+    - [Table of contents](#table-of-contents)
+    - [Instrallation](#instrallation)
+        - [Required packages](#required-packages)
+        - [Easy Run and Debug](#easy-run-and-debug)
+        - [Deployment](#deployment)
+            - [On Raspbian](#on-raspbian)
+        - [GUI interface (AS IS)](#gui-interface-as-is)
+- [API Reference](#api-reference)
+    - [RESTful API](#restful-api)
+        - [/fpga](#fpga)
+            - [POST METHOD](#post-method)
+            - [GET METHOD](#get-method)
+            - [DELETE METHOD](#delete-method)
+        - [/switch](#switch)
+            - [POST METHOD](#post-method-1)
+        - [/hls](#hls)
+            - [POST METHOD](#post-method-2)
+        - [/status](#status)
+            - [GET METHOD](#get-method-1)
+        - [/regread](#regread)
+            - [POST METHOD](#post-method-3)
+        - [/regwrite](#regwrite)
+            - [POST METHOD](#post-method-4)
+        - [/runcmd](#runcmd)
+            - [POST METHOD](#post-method-5)
+
+<!-- /TOC -->
 ---
 ## Instrallation
 
@@ -233,14 +262,15 @@ Configuring switch table
   {
     'ports' : '<number of out ports Pn>',
     'slots' : '<number of slots Sn>',
-    'output' : {
-      'output0': {
+    'outputs' : {
+      'port0': {
         'slot0': '0',
+        'slot1': '0',
         ...
-        'slotSn': '<input port number>',
+        'slotN': '<input port number>',
       },
       ...
-      'outputPn': {
+      'portN': {
         ...,
       },
     },
