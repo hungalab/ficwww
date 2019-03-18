@@ -378,11 +378,17 @@ $jq(function($){
 
 				// Channel linkup
 				for(var i=0; i<8; i++) {
-					if (status['board']['channel'] & i) {
+					if (status['board']['channel'] & i+1) {
 						$('#led_ch'+i).addClass('led_green_on');
 					} else {
 						$('#led_ch'+i).removeClass('led_green_on');
 					}
+				}
+
+				// Packet counter (sw0)
+				for(var i=0; i<8; i++) {
+					$('#sw0_pcc_in'+i).text(status['board']['packet']['sw0']['in'+i]);
+					$('#sw0_pcc_out'+i).text(status['board']['packet']['sw0']['out'+i]);
 				}
 
 			} else {
