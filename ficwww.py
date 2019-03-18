@@ -216,33 +216,56 @@ def rest_switch_post():
         abort(400)
 
     json = request.json
+
+    n_ports = 0
+    n_slots = 0
+    table = []
+
     try:
-        ST['switch']['ports'] = json['ports']
-        ST['switch']['slots'] = json['slots']
-        ST['switch']['outputs'] = json['outputs']
+        n_ports = int(json['ports'])
+        n_slots = int(json['slots'])
+        _table = json['outputs']
+
+        # Parse table
+        for nout in range(n_ports):
+            nout_key = 'port{0:d}'.format(nout)
+            if nout_key not in _table:
+                raise KeyError('port {0:s} is not found'.format(nout_key))
+
+            addr_hi = nout
+            for sout in range(n_slots):
+                sout_key = 'slot{0:d}'.format(sout)
+                if sout_key not in _table[nout_key]:
+                    raise KeyError('slot {0:s} is not found'.format(sout_key))
+
+                addr_lo = sout
+                addr = (addr_hi << 8 | addr_lo)
+                table.append((addr, _table[nout_key][sout_key]))
+
+        # Set fcgi internal table
+        ST['switch']['ports'] = n_ports
+        ST['switch']['slots'] = n_slots
+        ST['switch']['outputs'] = _table
 
     except Exception as e:
         print(e)
         return jsonify({"return" : "failed"})
 
+
     # Configure switch
     try: 
         Fic.gpio_open()
-        for on, (ok, ov) in enumerate(ST['switch']['outputs'].items()):
-            addr_hi = on
-            for sn, (sk, sv) in enumerate(ov.items()):
-                addr_lo = sn
-                addr = (addr_hi << 8 | addr_lo)
+        for t in table:
+            addr, sv = t
+            if (ST['fpga']['ifbit'] == 8):
+                # Use 8bit mode I/F
+                #Fic.wb8(addr, sv.to_bytes(1, 'big'))
+                Fic.wb8(addr, sv)
 
-                if (ST['fpga']['ifbit'] == 8):
-                    # Use 8bit mode I/F
-                    #Fic.wb8(addr, sv.to_bytes(1, 'big'))
-                    Fic.wb8(addr, sv)
-
-                elif (ST['fpga']['ifbit'] == 4):
-                    # Use 4bit mode I/F
-                    #Fic.wb4(addr, sv.to_bytes(1, 'big'))
-                    Fic.wb4(addr, sv)
+            elif (ST['fpga']['ifbit'] == 4):
+                # Use 4bit mode I/F
+                #Fic.wb4(addr, sv.to_bytes(1, 'big'))
+                Fic.wb4(addr, sv)
 
         Fic.gpio_close()
 
