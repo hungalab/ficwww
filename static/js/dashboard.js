@@ -376,19 +376,19 @@ $jq(function($){
 					$('#led_1').removeClass('led_red_on');
 				}
 
-				// Channel linkup
-				for(var i=0; i<8; i++) {
-					if (status['board']['channel'] & i+1) {
+				// Channel linkup (max 16ch)
+				for(var i=0; i<16; i++) {
+					if (status['board']['channel'] & (0x1 << i)) {
 						$('#led_ch'+i).addClass('led_green_on');
 					} else {
 						$('#led_ch'+i).removeClass('led_green_on');
 					}
 				}
 
-				// Packet counter (sw0)
+				// Packet counter (max 8 ports)
 				for(var i=0; i<8; i++) {
-					$('#sw0_pcc_in'+i).text(status['board']['packet']['sw0']['in'+i]);
-					$('#sw0_pcc_out'+i).text(status['board']['packet']['sw0']['out'+i]);
+					$('#sw_pcr_in'+i).text(status['board']['pcr']['in'+i]);
+					$('#sw_pcr_out'+i).text(status['board']['pcr']['out'+i]);
 				}
 
 			} else {

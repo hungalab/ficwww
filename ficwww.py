@@ -81,8 +81,8 @@ ST = {
         "done" : False,
         "channel" : 0x0000,
         "id" : 0,
-        "packet" : {
-            "sw0" : { "in0": 0, "in1": 0, "in2": 0, "in3": 0, "out0": 0, "out1": 0, "out2": 0, "out3": 0 },
+        "pcr" : {
+            "in0": 0, "in1": 0, "in2": 0, "in3": 0, "out0": 0, "out1": 0, "out2": 0, "out3": 0
         }
     },
 }
@@ -372,28 +372,28 @@ def rest_status_get():
 
                             # ---- Packet counter ----
                             base_addr = 0xff00
-                            ST['board']['packet']['sw0']['in0'] = (Fic.rb8(base_addr+3)<<24|Fic.rb8(base_addr+2)<<16|Fic.rb8(base_addr+1)<<8|Fic.rb8(base_addr))
+                            ST['board']['pcr']['in0'] = (Fic.rb8(base_addr+3)<<24|Fic.rb8(base_addr+2)<<16|Fic.rb8(base_addr+1)<<8|Fic.rb8(base_addr))
 
                             base_addr = 0xff04
-                            ST['board']['packet']['sw0']['in1'] = (Fic.rb8(base_addr+3)<<24|Fic.rb8(base_addr+2)<<16|Fic.rb8(base_addr+1)<<8|Fic.rb8(base_addr))
+                            ST['board']['pcr']['in1'] = (Fic.rb8(base_addr+3)<<24|Fic.rb8(base_addr+2)<<16|Fic.rb8(base_addr+1)<<8|Fic.rb8(base_addr))
 
                             base_addr = 0xff08
-                            ST['board']['packet']['sw0']['in2'] = (Fic.rb8(base_addr+3)<<24|Fic.rb8(base_addr+2)<<16|Fic.rb8(base_addr+1)<<8|Fic.rb8(base_addr))
+                            ST['board']['pcr']['in2'] = (Fic.rb8(base_addr+3)<<24|Fic.rb8(base_addr+2)<<16|Fic.rb8(base_addr+1)<<8|Fic.rb8(base_addr))
 
                             base_addr = 0xff0c
-                            ST['board']['packet']['sw0']['in3'] = (Fic.rb8(base_addr+3)<<24|Fic.rb8(base_addr+2)<<16|Fic.rb8(base_addr+1)<<8|Fic.rb8(base_addr))
+                            ST['board']['pcr']['in3'] = (Fic.rb8(base_addr+3)<<24|Fic.rb8(base_addr+2)<<16|Fic.rb8(base_addr+1)<<8|Fic.rb8(base_addr))
 
                             base_addr = 0xff10
-                            ST['board']['packet']['sw0']['out0'] = (Fic.rb8(base_addr+3)<<24|Fic.rb8(base_addr+2)<<16|Fic.rb8(base_addr+1)<<8|Fic.rb8(base_addr))
+                            ST['board']['pcr']['out0'] = (Fic.rb8(base_addr+3)<<24|Fic.rb8(base_addr+2)<<16|Fic.rb8(base_addr+1)<<8|Fic.rb8(base_addr))
 
                             base_addr = 0xff14
-                            ST['board']['packet']['sw0']['out1'] = (Fic.rb8(base_addr+3)<<24|Fic.rb8(base_addr+2)<<16|Fic.rb8(base_addr+1)<<8|Fic.rb8(base_addr))
+                            ST['board']['pcr']['out1'] = (Fic.rb8(base_addr+3)<<24|Fic.rb8(base_addr+2)<<16|Fic.rb8(base_addr+1)<<8|Fic.rb8(base_addr))
 
                             base_addr = 0xff18
-                            ST['board']['packet']['sw0']['out2'] = (Fic.rb8(base_addr+3)<<24|Fic.rb8(base_addr+2)<<16|Fic.rb8(base_addr+1)<<8|Fic.rb8(base_addr))
+                            ST['board']['pcr']['out2'] = (Fic.rb8(base_addr+3)<<24|Fic.rb8(base_addr+2)<<16|Fic.rb8(base_addr+1)<<8|Fic.rb8(base_addr))
 
                             base_addr = 0xff1c
-                            ST['board']['packet']['sw0']['out3'] = (Fic.rb8(base_addr+3)<<24|Fic.rb8(base_addr+2)<<16|Fic.rb8(base_addr+1)<<8|Fic.rb8(base_addr))
+                            ST['board']['pcr']['out3'] = (Fic.rb8(base_addr+3)<<24|Fic.rb8(base_addr+2)<<16|Fic.rb8(base_addr+1)<<8|Fic.rb8(base_addr))
 
 
                         if ST['fpga']['ifbit'] == 4:
@@ -405,28 +405,28 @@ def rest_status_get():
 
                             # ---- Packet counter ----
                             base_addr = 0xff00
-                            ST['board']['packet']['sw0']['in0'] = (Fic.rb4(base_addr+3)<<24|Fic.rb4(base_addr+2)<<16|Fic.rb4(base_addr+1)<<8|Fic.rb4(base_addr))
+                            ST['board']['pcr']['in0'] = (Fic.rb4(base_addr+3)<<24|Fic.rb4(base_addr+2)<<16|Fic.rb4(base_addr+1)<<8|Fic.rb4(base_addr))
 
                             base_addr = 0xff04
-                            ST['board']['packet']['sw0']['in1'] = (Fic.rb4(base_addr+3)<<24|Fic.rb4(base_addr+2)<<16|Fic.rb4(base_addr+1)<<8|Fic.rb4(base_addr))
+                            ST['board']['pcr']['in1'] = (Fic.rb4(base_addr+3)<<24|Fic.rb4(base_addr+2)<<16|Fic.rb4(base_addr+1)<<8|Fic.rb4(base_addr))
 
                             base_addr = 0xff08
-                            ST['board']['packet']['sw0']['in2'] = (Fic.rb4(base_addr+3)<<24|Fic.rb4(base_addr+2)<<16|Fic.rb4(base_addr+1)<<8|Fic.rb4(base_addr))
+                            ST['board']['pcr']['in2'] = (Fic.rb4(base_addr+3)<<24|Fic.rb4(base_addr+2)<<16|Fic.rb4(base_addr+1)<<8|Fic.rb4(base_addr))
 
                             base_addr = 0xff0c
-                            ST['board']['packet']['sw0']['in3'] = (Fic.rb4(base_addr+3)<<24|Fic.rb4(base_addr+2)<<16|Fic.rb4(base_addr+1)<<8|Fic.rb4(base_addr))
+                            ST['board']['pcr']['in3'] = (Fic.rb4(base_addr+3)<<24|Fic.rb4(base_addr+2)<<16|Fic.rb4(base_addr+1)<<8|Fic.rb4(base_addr))
 
                             base_addr = 0xff10
-                            ST['board']['packet']['sw0']['out0'] = (Fic.rb4(base_addr+3)<<24|Fic.rb4(base_addr+2)<<16|Fic.rb4(base_addr+1)<<8|Fic.rb4(base_addr))
+                            ST['board']['pcr']['out0'] = (Fic.rb4(base_addr+3)<<24|Fic.rb4(base_addr+2)<<16|Fic.rb4(base_addr+1)<<8|Fic.rb4(base_addr))
 
                             base_addr = 0xff14
-                            ST['board']['packet']['sw0']['out1'] = (Fic.rb4(base_addr+3)<<24|Fic.rb4(base_addr+2)<<16|Fic.rb4(base_addr+1)<<8|Fic.rb4(base_addr))
+                            ST['board']['pcr']['out1'] = (Fic.rb4(base_addr+3)<<24|Fic.rb4(base_addr+2)<<16|Fic.rb4(base_addr+1)<<8|Fic.rb4(base_addr))
 
                             base_addr = 0xff18
-                            ST['board']['packet']['sw0']['out2'] = (Fic.rb4(base_addr+3)<<24|Fic.rb4(base_addr+2)<<16|Fic.rb4(base_addr+1)<<8|Fic.rb4(base_addr))
+                            ST['board']['pcr']['out2'] = (Fic.rb4(base_addr+3)<<24|Fic.rb4(base_addr+2)<<16|Fic.rb4(base_addr+1)<<8|Fic.rb4(base_addr))
 
                             base_addr = 0xff1c
-                            ST['board']['packet']['sw0']['out3'] = (Fic.rb4(base_addr+3)<<24|Fic.rb4(base_addr+2)<<16|Fic.rb4(base_addr+1)<<8|Fic.rb4(base_addr))
+                            ST['board']['pcr']['out3'] = (Fic.rb4(base_addr+3)<<24|Fic.rb4(base_addr+2)<<16|Fic.rb4(base_addr+1)<<8|Fic.rb4(base_addr))
 
                     except:
                         # if readout via fic interface failed

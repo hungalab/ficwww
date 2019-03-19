@@ -6,7 +6,9 @@
 		<title>{{ title }}</title>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
         <script type="text/javascript" src="static/js/dashboard.js"></script>
-        <link rel="stylesheet" href="static/css/default.css">
+		<link rel="stylesheet" href="static/css/default.css">
+		<meta http-equiv="Pragma" content="no-cache">
+		<meta http-equiv="Cache-Control" content="no-cache">
 	</head>
 	<body>
 		<h2> Flow-in-Cloud Board (on {{host}})</h2> 
@@ -159,11 +161,11 @@
 			CH14: <span class="led_green" id="led_ch14"></span> &nbsp;
 			CH15: <span class="led_green" id="led_ch15"></span> &nbsp;
 
-			<h4>Packet counter (sw0):</h4>
-			Port0 (I/O): <span id="sw0_pcc_in0"></span>/<span id="sw0_pcc_out0"></span><br>
-			Port1 (I/O): <span id="sw0_pcc_in1"></span>/<span id="sw0_pcc_out1"></span><br>
-			Port2 (I/O): <span id="sw0_pcc_in2"></span>/<span id="sw0_pcc_out2"></span><br>
-			Port3 (I/O): <span id="sw0_pcc_in3"></span>/<span id="sw0_pcc_out3"></span><br>
+			<h4>Packet counter:</h4>
+			Port0 (I/O): <span id="sw_pcr_in0"></span>/<span id="sw_pcr_out0"></span><br>
+			Port1 (I/O): <span id="sw_pcr_in1"></span>/<span id="sw_pcr_out1"></span><br>
+			Port2 (I/O): <span id="sw_pcr_in2"></span>/<span id="sw_pcr_out2"></span><br>
+			Port3 (I/O): <span id="sw_pcr_in3"></span>/<span id="sw_pcr_out3"></span><br>
 
 			</div>
 
