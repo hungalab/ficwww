@@ -17,15 +17,22 @@
 		<hr>
 
 		<h3> FiC hostname : {{ host }} </h3>
-		<p class="ledText"><span id="conf_memo"></span></p>
-		<!---------------- FPGA control box ---------------->
-		<div class="info_box">
-			<h2>FPGA</h2>
-
-			<h3>Status</h3>
+		<div class="blank_box">
 			<span class="square_btn_orange" id="btn_reflesh">REFLESH</span>
 			<span id="status_msg"></span>
-			<br><br>
+			<br>
+			<input type="checkbox" id="chkbox_allow_reflesh">
+			<label for="chkbox_allow_reflesh">Allow Autoreflesh</label>
+			<input type="checkbox" id="chkbox_allow_gpio">
+			<label for="chkbox_allow_gpio">Allow get_status() access FiC-RPi interface</label>
+		</div>
+
+		<p class="ledText"><span id="conf_memo"></span></p>
+		<!---------------- FPGA control box ---------------->
+
+		<div class="info_box">
+			<h2>FPGA</h2>
+			<h3>Status</h3>
 			PW_OK : <div class="led_green" id="led_power"></div> /
 			DONE : <div class="led_green" id="led_done"></div> /
 			CONF : <span id="bit_file_name"></span> /

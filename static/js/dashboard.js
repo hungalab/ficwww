@@ -330,9 +330,9 @@ $jq(function($){
 		.done(function(data, textStatus, jqXHR){
 			console.log(data);
 			//board_led_ctl(data);
+			var status = data['status'];
 
 			if (data['return'] == 'success') {
-				var status = data['status'];
 
 				// Power LED
 				if (status['board']['power']) {
@@ -395,6 +395,20 @@ $jq(function($){
 				$('#status_msg').text("get_status failed. FPGA may not configured yet?");		// configuration time
 				//alert("get_status failed")
 			}
+
+			// config checkboxes
+			if (status['config']['auto_reflesh']) {
+				$('#chkbox_allow_reflesh').prop('checked', true);
+			} else {
+				$('#chkbox_allow_reflesh').prop('checked', false);
+			}
+
+			if (status['config']['use_gpio']) {
+				$('#chkbox_allow_gpio').prop('checked', true);
+			} else {
+				$('#chkbox_allow_gpio').prop('checked', false);
+			}
+
 			var date = new Date()
 			$('#status_msg').text("Status at " + date.toUTCString());		// configuration time
 			$('#conf_memo').text(status['fpga']['memo']);					// FPGA configuration memo
@@ -588,11 +602,57 @@ $jq(function($){
 		}
 	});
 
+	//-------------------------------------------------------------------------
+	// Checkboxes
+	//-------------------------------------------------------------------------
+	$('#chkbox_allow_gpio').on('change', function(){
+		var json = {
+			"use_gpio": $('#chkbox_allow_gpio').prop('checked')
+		};
+		$.ajax({
+			url         : 'config',
+			type        : 'post',
+			data        : JSON.stringify(json),
+			cache       : false,
+			contentType : 'application/json',
+			dataType    : 'json',
+			timeout     : 10000
+		})
+		.done(function(form_data, textStatus, jqXHR){
+		})
+		.fail(function(jqXHR, textStatus, errorThrown){
+			alert('AJAX failed');
+		});
+	});
+
+	$('#chkbox_allow_reflesh').on('change', function(){
+		var json = {
+			"auto_reflesh": $('#chkbox_allow_reflesh').prop('checked')
+		};
+		$.ajax({
+			url         : 'config',
+			type        : 'post',
+			data        : JSON.stringify(json),
+			cache       : false,
+			contentType : 'application/json',
+			dataType    : 'json',
+			timeout     : 10000
+		})
+		.done(function(form_data, textStatus, jqXHR){
+		})
+		.fail(function(jqXHR, textStatus, errorThrown){
+			alert('AJAX failed');
+		});
+	});
+
+
 	//----------------------------------------------------------------------------
-	//// Every 10s
+	// Every 10s
 	//----------------------------------------------------------------------------
-	//tmr1 = setInterval(function(){
-	//	get_status();
-	//}, 10000);
+	tmr1 = setInterval(function(){
+		if ($('#chkbox_allow_reflesh').prop('checked')) {
+			get_status();
+		}
+	}, 10000);
 });
 
