@@ -377,11 +377,20 @@ $jq(function($){
 				}
 
 				// Channel linkup (max 16ch)
-				for(var i=0; i<16; i++) {
-					if (status['board']['channel'] & (0x1 << i)) {
-						$('#led_ch'+i).addClass('led_green_on');
-					} else {
-						$('#led_ch'+i).removeClass('led_green_on');
+				if (status['board']['channel'] != 0x10000) {
+					for (var i = 0; i < 16; i++) {
+						if (status['board']['channel'] & (0x1 << i)) {
+							$('#led_ch' + i).removeClass('led_orange_on');
+							$('#led_ch' + i).addClass('led_green_on');
+						} else {
+							$('#led_ch' + i).removeClass('led_green_on');
+							$('#led_ch' + i).addClass('led_orange_on');
+						}
+					}
+				} else {
+					for (var i = 0; i < 16; i++) {
+						$('#led_ch' + i).removeClass('led_orange_on');
+						$('#led_ch' + i).removeClass('led_green_on');
 					}
 				}
 
