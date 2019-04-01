@@ -543,8 +543,7 @@ def rest_runcmd():
         abort(400)
 
     if ENABLE_RUNCMD_API == False:
-        print("ERROR: This feature is not enabled")
-        return jsonify({"return": "failed"})
+        return jsonify({"return": "failed", "error": "This feature is disabled"})
 
     json = request.json
     try:
@@ -555,7 +554,7 @@ def rest_runcmd():
 
     except Exception as e:
         print(e)
-        return jsonify({"return": "failed"})
+        return jsonify({"return": "failed", "error": "Exception happened"})
 
 #    return jsonify({"return" : "success", "data" : data})
     return jsonify({"return": "success", "stdout": sout, "stderr": serr})
