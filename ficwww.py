@@ -27,6 +27,7 @@ app = Flask(__name__)
 # ------------------------------------------------------------------------------
 ENABLE_RUNCMD_API = True                        # If enable RUNCMD_API
 MINIMUM_UPDATE_SEC = 10                         # minimum status update period
+RUNCMD_DEFAULT_TIMEOUT = 5
 
 # ------------------------------------------------------------------------------
 # Status table
@@ -543,21 +544,48 @@ def rest_runcmd():
         abort(400)
 
     if ENABLE_RUNCMD_API == False:
-        return jsonify({"return": "failed", "error": "This feature is disabled"})
+        return jsonify({"return": "failed", 
+                        "stdout": "", 
+                        "stderr": "", 
+                        "error": "This feature is disabled"})
 
     json = request.json
     try:
+        # Get cmd from json
         cmd = json['command']
+
+        # Get timeout from json. Default value is 5 sec
+        timeout = RUNCMD_DEFAULT_TIMEOUT
+        if 'timeout' in json.keys():
+            timeout = json['timeout']
+
         proc = Popen(cmd, shell=True, stdout=subprocess.PIPE,
                      stderr=subprocess.PIPE)
-        sout, serr = proc.communicate(timeout=5)
+        sout, serr = proc.communicate(timeout=timeout)
+
+    except subprocess.TimeoutExpired as e:
+        return jsonify({"return": "failed", 
+                        "stdout": e.stdout, 
+                        "stderr": e.stderr, 
+                        "error": "Called process timeout happened"})
+
+    except subprocess.CalledProcessError as e:
+        return jsonify({"return": "failed", 
+                        "stdout": e.stdout, 
+                        "stderr": e.stderr, 
+                        "error": "Called process returned non zero"})
 
     except Exception as e:
-        print(e)
-        return jsonify({"return": "failed", "error": "Exception happened"})
+        return jsonify({"return": "failed", 
+                        "stdout": "", 
+                        "stderr": "", 
+                        "error": "Something nasty happened"})
 
-#    return jsonify({"return" : "success", "data" : data})
-    return jsonify({"return": "success", "stdout": sout, "stderr": serr})
+
+    return jsonify({"return": "success",
+                    "stdout": sout,
+                    "stderr": serr,
+                    "error": ""})
 
 #-------------------------------------------------------------------------------
 # ficwww configure API

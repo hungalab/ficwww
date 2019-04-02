@@ -417,6 +417,7 @@ Run command in RPi3 raspbian
     ```
     {
       'command'   : '<command with arguments>'
+      'timeout'   : '<timeout seconds (if not set default is 5 sec)>'
     }
     ```
 
@@ -426,5 +427,6 @@ Run command in RPi3 raspbian
       'return': 'success' | 'failed'
       'stdout' : '<command stdout>'
       'stderr' : '<command stderr>'
+      'error'  : '<error message if exist>'
     }
     ```
