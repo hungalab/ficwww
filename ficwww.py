@@ -561,7 +561,6 @@ def rest_runcmd():
             timeout = json['timeout']
 
         proc = Popen(cmd, shell=True, stdout=subprocess.PIPE,
-<<<<<<< HEAD
                      stderr=subprocess.PIPE,
                      preexec_fn=os.setsid)
         sout, serr = proc.communicate(timeout=timeout)
@@ -569,13 +568,6 @@ def rest_runcmd():
     except subprocess.TimeoutExpired as e:
         #proc.terminate()    # Terminate timeout process tree
         os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
-=======
-                     stderr=subprocess.PIPE)
-        sout, serr = proc.communicate(timeout=timeout)
-
-    except subprocess.TimeoutExpired as e:
-        proc.terminate()    # Terminate timeout process
->>>>>>> 6bdd216a0b12bd33714af934aaa3ebc3bdc9dc88
         return jsonify({"return": "failed", 
                         "stdout": e.stdout, 
                         "stderr": e.stderr, 
