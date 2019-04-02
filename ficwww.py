@@ -564,10 +564,11 @@ def rest_runcmd():
         sout, serr = proc.communicate(timeout=timeout)
 
     except subprocess.TimeoutExpired as e:
+        proc.terminate()    # Terminate timeout process
         return jsonify({"return": "failed", 
                         "stdout": e.stdout, 
                         "stderr": e.stderr, 
-                        "error": "Called process timeout happened"})
+                        "error": "Called process timeout happened (Force KILLED)"})
 
     except subprocess.CalledProcessError as e:
         return jsonify({"return": "failed", 
