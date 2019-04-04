@@ -11,6 +11,7 @@ import json
 import base64
 import sys
 import argparse
+import traceback
 
 import subprocess
 from subprocess import Popen
@@ -88,9 +89,13 @@ ST = {
 # so this library is for only handle open/close 
 # ------------------------------------------------------------------------------
 class Opengpio:
+    def __init__(self):
+        self.fd_lock = 0
+
     def __enter__(self):
         try:
-            Fic.gpio_open()
+            self.fd_lock = Fic.gpio_open()
+            #print("DEBUG: gpio_open()", self.fd_lock)
 
         except:
             raise IOError
@@ -99,7 +104,8 @@ class Opengpio:
 
     def __exit__(self, type, value, traceback):
         try:
-            Fic.gpio_close()
+            Fic.gpio_close(self.fd_lock)
+            #print("DEBUG: gpio_close()", self.fd_lock)
 
         except:
             print("DEBUG: gpio_close() failed")
@@ -579,11 +585,12 @@ def rest_runcmd():
                         "stderr": e.stderr, 
                         "error": "Called process returned non zero"})
 
-    except Exception as e:
+    except Exception:
         return jsonify({"return": "failed", 
                         "stdout": "", 
                         "stderr": "", 
-                        "error": "Something nasty happened"})
+                        "error": "Something nasty happened:\n{0:s}".format(traceback.format_exc())
+                        })
 
 
     return jsonify({"return": "success",
@@ -616,8 +623,8 @@ def rest_conf():
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-p', '--port', help='port number (default: 5000)', default=5000)
+    parser.add_argument('-p', '--port', nargs='?', type=int, default=5000, help='port number (default: 5000)')
     args = parser.parse_args()
 
     #    fpga_startup()
-    app.run(debug=True, use_reloader=True, host='0.0.0.0')
+    app.run(debug=True, use_reloader=True, host='0.0.0.0', port=args.port)
