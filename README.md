@@ -6,37 +6,41 @@
 * FPGA communication with ficlib2
 * Provides RESTful interface
 
+## NOTE: Due to support both mk1 and mk2 boards, RESTful API name has changed.
+
 ---
 ## Table of contents
 <!-- TOC -->
 
 - [ficwww](#ficwww)
-    - [fic board www GUI interface](#fic-board-www-gui-interface)
-    - [Table of contents](#table-of-contents)
-    - [Instrallation](#instrallation)
-        - [Required packages](#required-packages)
-        - [Easy Run and Debug](#easy-run-and-debug)
-        - [Deployment](#deployment)
-            - [On Raspbian](#on-raspbian)
-        - [GUI interface (AS IS)](#gui-interface-as-is)
+  - [fic board www GUI interface](#fic-board-www-gui-interface)
+  - [NOTE: Due to support both mk1 and mk2 boards, RESTful API name has changed.](#note-due-to-support-both-mk1-and-mk2-boards-restful-api-name-has-changed)
+  - [Table of contents](#table-of-contents)
+  - [](#)
+  - [Instrallation](#instrallation)
+    - [Required packages](#required-packages)
+    - [Easy Run and Debug](#easy-run-and-debug)
+    - [Deployment](#deployment)
+      - [On Raspbian](#on-raspbian)
+    - [GUI interface (AS IS)](#gui-interface-as-is)
 - [API Reference](#api-reference)
-    - [RESTful API](#restful-api)
-        - [/fpga](#fpga)
-            - [POST METHOD](#post-method)
-            - [GET METHOD](#get-method)
-            - [DELETE METHOD](#delete-method)
-        - [/switch](#switch)
-            - [POST METHOD](#post-method-1)
-        - [/hls](#hls)
-            - [POST METHOD](#post-method-2)
-        - [/status](#status)
-            - [GET METHOD](#get-method-1)
-        - [/regread](#regread)
-            - [POST METHOD](#post-method-3)
-        - [/regwrite](#regwrite)
-            - [POST METHOD](#post-method-4)
-        - [/runcmd](#runcmd)
-            - [POST METHOD](#post-method-5)
+  - [RESTful API](#restful-api)
+    - [/fpga](#fpga)
+      - [POST METHOD](#post-method)
+      - [GET METHOD](#get-method)
+      - [DELETE METHOD](#delete-method)
+    - [/switch](#switch)
+      - [POST METHOD](#post-method-1)
+    - [/hls](#hls)
+      - [POST METHOD](#post-method-2)
+    - [/status](#status)
+      - [GET METHOD](#get-method-1)
+    - [/regread](#regread)
+      - [POST METHOD](#post-method-3)
+    - [/regwrite](#regwrite)
+      - [POST METHOD](#post-method-4)
+    - [/runcmd](#runcmd)
+      - [POST METHOD](#post-method-5)
 
 <!-- /TOC -->
 ---
@@ -303,24 +307,24 @@ Send command or data to HLS module
     }
     ```
 
-    - send4
+    - send
     ```
     {
-      'command': 'send4',
+      'command': 'send',
       'data' : [0x80, 0x80, 0x80,...,],
     }
     ```
 
-    - receive4
+    - receive
     ```
     {
-      'command': 'receive4',
+      'command': 'receive',
       'count' : n
     }
     ```
 
 - Return 
-    - reset/start/send4
+    - reset/start/send
     ```
     {
       'return': '<success | failed>',
@@ -328,7 +332,7 @@ Send command or data to HLS module
     }
     ```
 
-    - receive4
+    - receive
     ```
     {
       'return': '<success | failed>',

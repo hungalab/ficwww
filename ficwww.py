@@ -45,7 +45,6 @@ ST = {
         "bitname": "unknown",                  # configure bitfile name
         "conftime": "----/--/-- --:--:--",     # configure time
         "memo": "",                            # memo
-        "ifbit": 4,                            # Interface bit width
         "done": False,                          # configure done
     },
     "switch": {
@@ -270,15 +269,7 @@ def rest_switch_post():
         with Opengpio():
             for t in table:
                 addr, sv = t
-                if (ST['fpga']['ifbit'] == 8):
-                    # Use 8bit mode I/F
-                    #Fic.wb8(addr, sv.to_bytes(1, 'big'))
-                    Fic.wb8(addr, sv)
-
-                elif (ST['fpga']['ifbit'] == 4):
-                    # Use 4bit mode I/F
-                    #Fic.wb4(addr, sv.to_bytes(1, 'big'))
-                    Fic.wb4(addr, sv)
+                Fic.read(addr, sv)
 
     except:  # Except while GPIO open
         return jsonify({"return": "failed"})
@@ -307,43 +298,31 @@ def rest_hls_post():
         hls_cmd = json['command']
         if hls_cmd == 'start':
             with Opengpio():
-                if ST['fpga']['ifbit'] == 8:
-                    Fic.hls_start8()
-
-                if ST['fpga']['ifbit'] == 4:
-                    Fic.hls_start4()
-
+                Fic.hls_start()
                 ST['hls']['status'] = 'start'
 
         elif hls_cmd == 'reset':
             with Opengpio():
-                if ST['fpga']['ifbit'] == 8:
-                    Fic.hls_reset8()
-
-                if ST['fpga']['ifbit'] == 4:
-                    Fic.hls_reset4()
-
+                Fic.hls_reset()
                 ST['hls']['status'] = 'stop'
 
-        elif hls_cmd == 'receive4':
+        elif hls_cmd == 'receive':
             if ST['hls']['status'] == 'stop':
                 return jsonify({"return": "failed", "error": "HLS is not running yet"})
 
             hls_data_count = json['count']
-
             with Opengpio():
-                hls_data = Fic.hls_receive4(hls_data_count)  # Todo: is any 8bit I/F?
+                hls_data = Fic.hls_receive(hls_data_count)  # Todo: is any 8bit I/F?
 
             return jsonify({"return": "success", "data": hls_data})
 
-        elif hls_cmd == 'send4':
+        elif hls_cmd == 'send':
             if ST['hls']['status'] == 'stop':
                 return jsonify({"return": "failed", "error": "HLS is not running yet"})
 
             hls_data = json['data']
-
             with Opengpio():
-                Fic.hls_send4(bytes(hls_data))  # Todo: is any 8bit I/F?
+                Fic.hls_send(bytes(hls_data))
 
         else:
             return jsonify({"return": "failed", "error": "Unknown command"})
@@ -368,95 +347,52 @@ def rest_status_get():
                 ST['board']['done'] = Fic.get_done()
 
                 if ST['config']['use_gpio'] and ST['board']['done'] == 1:    # FPGA is configured
-                    # Trying to read via fic 8bit interface
-                    if ST['fpga']['ifbit'] == 8:
-                        ST['board']['led'] = Fic.rb8(
-                            0xfffb)    # read LED status
-                        ST['board']['dipsw'] = Fic.rb8(
-                            0xfffc)  # read DIPSW status
-                        ST['board']['link'] = Fic.rb8(
-                            0xfffd)   # read Link status
-                        ST['board']['id'] = Fic.rb8(0xfffc)     # read board ID
-                        ST['board']['channel'] = (
-                            Fic.rb8(0xfff9) << 8 | Fic.rb8(0xfffa))  # Channel linkup
+                    ST['board']['led']     = Fic.read(0xfffb)  # read LED status
+                    ST['board']['dipsw']   = Fic.read(0xfffc)  # read DIPSW status
+                    ST['board']['link']    = Fic.read(0xfffd)  # read Link status
+                    ST['board']['id']      = Fic.read(0xfffc)  # read board ID
+                    ST['board']['channel'] = (Fic.read(0xfff9) << 8 | Fic.read(0xfffa))  # Channel linkup
 
-                        # ---- Packet counter ----
-                        base_addr = 0xff00
-                        ST['board']['pcr']['in0'] = (Fic.rb8(base_addr+3) << 24 | Fic.rb8(
-                            base_addr+2) << 16 | Fic.rb8(base_addr+1) << 8 | Fic.rb8(base_addr))
+                    # ---- Packet counter ----
+                    base_addr = 0xff00
+                    ST['board']['pcr']['in0'] = (
+                        Fic.read(base_addr+3) << 24 | Fic.read(base_addr+2) << 16 | 
+                        Fic.read(base_addr+1) << 8 | Fic.read(base_addr))
 
-                        base_addr = 0xff04
-                        ST['board']['pcr']['in1'] = (Fic.rb8(base_addr+3) << 24 | Fic.rb8(
-                            base_addr+2) << 16 | Fic.rb8(base_addr+1) << 8 | Fic.rb8(base_addr))
+                    base_addr = 0xff04
+                    ST['board']['pcr']['in1'] = (
+                        Fic.read(base_addr+3) << 24 | Fic.read(base_addr+2) << 16 | 
+                        Fic.read(base_addr+1) << 8 | Fic.read(base_addr))
 
-                        base_addr = 0xff08
-                        ST['board']['pcr']['in2'] = (Fic.rb8(base_addr+3) << 24 | Fic.rb8(
-                            base_addr+2) << 16 | Fic.rb8(base_addr+1) << 8 | Fic.rb8(base_addr))
+                    base_addr = 0xff08
+                    ST['board']['pcr']['in2'] = (
+                        Fic.read(base_addr+3) << 24 | Fic.read(base_addr+2) << 16 | 
+                        Fic.read(base_addr+1) << 8 | Fic.read(base_addr))
 
-                        base_addr = 0xff0c
-                        ST['board']['pcr']['in3'] = (Fic.rb8(base_addr+3) << 24 | Fic.rb8(
-                            base_addr+2) << 16 | Fic.rb8(base_addr+1) << 8 | Fic.rb8(base_addr))
+                    base_addr = 0xff0c
+                    ST['board']['pcr']['in3'] = (
+                        Fic.read(base_addr+3) << 24 | Fic.read(base_addr+2) << 16 | 
+                        Fic.read(base_addr+1) << 8 | Fic.read(base_addr))
 
-                        base_addr = 0xff10
-                        ST['board']['pcr']['out0'] = (Fic.rb8(base_addr+3) << 24 | Fic.rb8(
-                            base_addr+2) << 16 | Fic.rb8(base_addr+1) << 8 | Fic.rb8(base_addr))
+                    base_addr = 0xff10
+                    ST['board']['pcr']['out0'] = (
+                        Fic.read(base_addr+3) << 24 | Fic.read(base_addr+2) << 16 | 
+                        Fic.read(base_addr+1) << 8 | Fic.read(base_addr))
 
-                        base_addr = 0xff14
-                        ST['board']['pcr']['out1'] = (Fic.rb8(base_addr+3) << 24 | Fic.rb8(
-                            base_addr+2) << 16 | Fic.rb8(base_addr+1) << 8 | Fic.rb8(base_addr))
+                    base_addr = 0xff14
+                    ST['board']['pcr']['out1'] = (
+                        Fic.read(base_addr+3) << 24 | Fic.read(base_addr+2) << 16 | 
+                        Fic.read(base_addr+1) << 8 | Fic.read(base_addr))
 
-                        base_addr = 0xff18
-                        ST['board']['pcr']['out2'] = (Fic.rb8(base_addr+3) << 24 | Fic.rb8(
-                            base_addr+2) << 16 | Fic.rb8(base_addr+1) << 8 | Fic.rb8(base_addr))
+                    base_addr = 0xff18
+                    ST['board']['pcr']['out2'] = (
+                        Fic.read(base_addr+3) << 24 | Fic.read(base_addr+2) << 16 | 
+                        Fic.read(base_addr+1) << 8 | Fic.read(base_addr))
 
-                        base_addr = 0xff1c
-                        ST['board']['pcr']['out3'] = (Fic.rb8(base_addr+3) << 24 | Fic.rb8(
-                            base_addr+2) << 16 | Fic.rb8(base_addr+1) << 8 | Fic.rb8(base_addr))
-
-                    # Trying to read via fic 4bit interface
-                    if ST['fpga']['ifbit'] == 4:
-                        ST['board']['led'] = Fic.rb4(
-                            0xfffb)    # read LED status
-                        ST['board']['dipsw'] = Fic.rb4(
-                            0xfffc)  # read DIPSW status
-                        ST['board']['link'] = Fic.rb4(
-                            0xfffd)   # read Link status
-                        ST['board']['id'] = Fic.rb4(0xfffc)     # read board ID
-                        ST['board']['channel'] = (
-                            Fic.rb4(0xfff9) << 8 | Fic.rb4(0xfffa))  # Channel linkup
-
-                        # ---- Packet counter ----
-                        base_addr = 0xff00
-                        ST['board']['pcr']['in0'] = (Fic.rb4(base_addr+3) << 24 | Fic.rb4(
-                            base_addr+2) << 16 | Fic.rb4(base_addr+1) << 8 | Fic.rb4(base_addr))
-
-                        base_addr = 0xff04
-                        ST['board']['pcr']['in1'] = (Fic.rb4(base_addr+3) << 24 | Fic.rb4(
-                            base_addr+2) << 16 | Fic.rb4(base_addr+1) << 8 | Fic.rb4(base_addr))
-
-                        base_addr = 0xff08
-                        ST['board']['pcr']['in2'] = (Fic.rb4(base_addr+3) << 24 | Fic.rb4(
-                            base_addr+2) << 16 | Fic.rb4(base_addr+1) << 8 | Fic.rb4(base_addr))
-
-                        base_addr = 0xff0c
-                        ST['board']['pcr']['in3'] = (Fic.rb4(base_addr+3) << 24 | Fic.rb4(
-                            base_addr+2) << 16 | Fic.rb4(base_addr+1) << 8 | Fic.rb4(base_addr))
-
-                        base_addr = 0xff10
-                        ST['board']['pcr']['out0'] = (Fic.rb4(base_addr+3) << 24 | Fic.rb4(
-                            base_addr+2) << 16 | Fic.rb4(base_addr+1) << 8 | Fic.rb4(base_addr))
-
-                        base_addr = 0xff14
-                        ST['board']['pcr']['out1'] = (Fic.rb4(base_addr+3) << 24 | Fic.rb4(
-                            base_addr+2) << 16 | Fic.rb4(base_addr+1) << 8 | Fic.rb4(base_addr))
-
-                        base_addr = 0xff18
-                        ST['board']['pcr']['out2'] = (Fic.rb4(base_addr+3) << 24 | Fic.rb4(
-                            base_addr+2) << 16 | Fic.rb4(base_addr+1) << 8 | Fic.rb4(base_addr))
-
-                        base_addr = 0xff1c
-                        ST['board']['pcr']['out3'] = (Fic.rb4(base_addr+3) << 24 | Fic.rb4(
-                            base_addr+2) << 16 | Fic.rb4(base_addr+1) << 8 | Fic.rb4(base_addr))
+                    base_addr = 0xff1c
+                    ST['board']['pcr']['out3'] = (
+                        Fic.read(base_addr+3) << 24 | Fic.read(base_addr+2) << 16 | 
+                        Fic.read(base_addr+1) << 8 | Fic.read(base_addr))
 
                 else:
                     # If can not read out from the board, reset values.
@@ -501,11 +437,7 @@ def rest_regwrite():
         data = json['data']
 
         with Opengpio():
-            if ST['fpga']['ifbit'] == 8:
-                Fic.wb8(addr, data)
-
-            if ST['fpga']['ifbit'] == 4:
-                Fic.wb4(addr, data)
+            Fic.write(addr, data)
 
     except:
         return jsonify({"return": "failed"})
@@ -530,11 +462,7 @@ def rest_regread():
         addr = json['address']
 
         with Opengpio():
-            if ST['fpga']['ifbit'] == 8:
-                data = Fic.rb8(addr)
-
-            if ST['fpga']['ifbit'] == 4:
-                data = Fic.rb4(addr)
+            data = Fic.read(addr)
 
     except:
         return jsonify({"return": "failed"})
