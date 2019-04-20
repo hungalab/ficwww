@@ -161,6 +161,14 @@ body {
     background: #330;
 }
 
+.led_red {
+    display: inline-block;
+    width: 10px;
+    height: 5px;
+    border: 2px solid #404040;
+    background: #330;
+}
+
 .led_green_on {
     background: #00ff00;
 }
@@ -171,14 +179,6 @@ body {
 
 .led_orange_on {
     background: #ffa500;
-}
-
-.led_red {
-    display: inline-block;
-    width: 10px;
-    height: 5px;
-    border: 2px solid #404040;
-    background: #330;
 }
 
 .led_sp {
