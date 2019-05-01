@@ -35,7 +35,7 @@ RUNCMD_DEFAULT_TIMEOUT = 5
 # Status table
 # ------------------------------------------------------------------------------
 ST = {
-    "last_update": 0,                          # last update
+    "last_update": 0,                          # last update ts
     "config": {                                 # ficwww config
         "auto_reflesh": False,                  # Auto reflesh mode
         "use_gpio": True,                       # use GPIO
@@ -45,7 +45,7 @@ ST = {
         "bitname": "unknown",                  # configure bitfile name
         "conftime": "----/--/-- --:--:--",     # configure time
         "memo": "",                            # memo
-        "done": False,                          # configure done
+        "done": False,                         # configure done via ficwww
     },
     "switch": {
         "ports": 4,
@@ -68,15 +68,15 @@ ST = {
     "hls": {
         "status": "stop",
     },
-    "board": {
-        "power": False,
-        "done": False,
-        "dipsw": 0,
-        "led": 0,
-        "link": 0,
-        "channel": 0x0000,
-        "id": -1,
-        "pcr": {
+    "board": {                                  # Board part is updated by get_status()
+        "power":   False,                       # Board power ok signal
+        "done":    False,                       # Board done signal
+        "dipsw":   0,                           # DipSW status
+        "led":     0,                           # LED register status
+        "link":    0,                           # Aurora linkup signal
+        "channel": 0x0000,                      # Channel register status
+        "id":      -1,
+        "pcr": {                                # Packet counter status
             "in0": -1, "in1": -1, "in2": -1, "in3": -1,
             "out0": -1, "out1": -1, "out2": -1, "out3": -1
         }
@@ -110,7 +110,7 @@ class Opengpio:
             print("DEBUG: gpio_close() failed")
             raise IOError
 
-        return True
+        return False    # Should not supress exception propergation
 
 # ------------------------------------------------------------------------------
 # Docroot
@@ -164,27 +164,19 @@ def rest_fpga_post():
             ST['fpga']['done'] = False
 
             if ST['fpga']['mode'] == 'sm16':
-                if Fic.prog_sm16(data=bs, progmode=0) == 0:
-                    raise Exception
-
+                Fic.prog_sm16(data=bs, progmode=0)
                 # ST['fpga']['ifbit'] = 8    # FIX190316
 
             elif ST['fpga']['mode'] == 'sm16pr':
-                if Fic.prog_sm16(data=bs, progmode=1) == 0:
-                    raise Exception
-
+                Fic.prog_sm16(data=bs, progmode=1)
                 # ST['fpga']['ifbit'] = 8    # FIX190316
 
             elif ST['fpga']['mode'] == 'sm8':
-                if Fic.prog_sm8(data=bs, progmode=0) == 0:
-                    raise Exception
-
+                Fic.prog_sm8(data=bs, progmode=0)
                 # ST['fpga']['ifbit'] = 4    # FIX190316
 
             elif ST['fpga']['mode'] == 'sm8pr':
-                if Fic.prog_sm8(data=bs, progmode=1) == 0:
-                    raise Exception
-
+                Fic.prog_sm8(data=bs, progmode=1)
                 # ST['fpga']['ifbit'] = 4    # FIX190316
 
             # Set status
@@ -290,7 +282,7 @@ def rest_hls_post():
     if not request.is_json:
         abort(400)
 
-    if ST['fpga']['done'] == False:
+    if ST['board']['done'] == False:
         return jsonify({"return": "failed", "error": "FPGA is not configured"})
 
     json = request.json
@@ -428,7 +420,7 @@ def rest_regwrite():
     if not request.is_json:
         abort(400)
 
-    if ST['fpga']['done'] == False:
+    if ST['board']['done'] == False:
         return jsonify({"return": "failed", "error": "FPGA is not configured"})
 
     json = request.json
@@ -453,7 +445,7 @@ def rest_regread():
     if not request.is_json:
         abort(400)
 
-    if ST['fpga']['done'] == False:
+    if ST['board']['done'] == False:
         return jsonify({"return": "failed", "error": "FPGA is not configured"})
 
     data = None
