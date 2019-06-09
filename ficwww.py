@@ -97,6 +97,7 @@ class Opengpio:
             #print("DEBUG: gpio_open()", self.fd_lock)
 
         except:
+            print("DEBUG: gpio_open() failed", self.fd_lock)
             raise IOError
             
         return self
@@ -142,7 +143,7 @@ def rest_fpga_post():
         bitstream = json['bitstream']
 
     except Exception as e:
-        print(e)
+        traceback.print_exc()
         return jsonify({"return": "failed"})
 
     # Check progmode
@@ -155,7 +156,7 @@ def rest_fpga_post():
         print("DEBUG: Recived bytes: ", len(bs))
 
     except Exception as e:
-        print(e)
+        traceback.print_exc()
         return jsonify({"return": "failed"})
 
     print("DEBUG: Program FPGA...")
@@ -185,6 +186,7 @@ def rest_fpga_post():
             ST['fpga']['memo'] = json['memo']
 
     except Exception as e:
+        traceback.print_exc()
         return jsonify({"return": "failed"})
 
     return jsonify({"return": "success"})
@@ -202,6 +204,7 @@ def rest_fpga_delete():
             Fic.prog_init()
 
     except:
+        traceback.print_exc()
         return jsonify({"return": "failed"})
 
     ST['fpga']['bitname'] = ''
@@ -253,7 +256,7 @@ def rest_switch_post():
         ST['switch']['outputs'] = _table
 
     except Exception as e:
-        print(e)
+        traceback.print_exc()
         return jsonify({"return": "failed"})
 
     # Configure switch
@@ -261,9 +264,10 @@ def rest_switch_post():
         with Opengpio():
             for t in table:
                 addr, sv = t
-                Fic.read(addr, sv)
+                Fic.write(addr, sv)
 
     except:  # Except while GPIO open
+        traceback.print_exc()
         return jsonify({"return": "failed"})
 
     return jsonify({"return": "success"})
@@ -320,6 +324,7 @@ def rest_hls_post():
             return jsonify({"return": "failed", "error": "Unknown command"})
 
     except Exception:
+        traceback.print_exc()
         return jsonify({"return": "failed"})
 
     return jsonify({"return": "success"})
@@ -406,6 +411,7 @@ def rest_status_get():
                     ST['board']['pcr']['out3'] = -1
 
     except:
+        traceback.print_exc()
         return jsonify({"return": "failed", "status": ST})
 
     ST['last_update'] = time.time()
@@ -432,6 +438,7 @@ def rest_regwrite():
             Fic.write(addr, data)
 
     except:
+        traceback.print_exc()
         return jsonify({"return": "failed"})
 
     return jsonify({"return": "success"})
@@ -457,6 +464,7 @@ def rest_regread():
             data = Fic.read(addr)
 
     except:
+        traceback.print_exc()
         return jsonify({"return": "failed"})
 
     return jsonify({"return": "success", "data": data})
@@ -506,6 +514,7 @@ def rest_runcmd():
                         "error": "Called process returned non zero"})
 
     except Exception:
+        traceback.print_exc()
         return jsonify({"return": "failed", 
                         "stdout": "", 
                         "stderr": "", 
@@ -535,7 +544,7 @@ def rest_conf():
                 ST['config'][k] = v
 
     except Exception as e:
-        print(e)
+        traceback.print_exc()
         return jsonify({"return": "failed"})
 
     return jsonify({"return": "success"})
