@@ -12,6 +12,8 @@ import base64
 import sys
 import argparse
 import traceback
+import gc
+import tracemalloc
 
 import subprocess
 from subprocess import Popen
@@ -131,6 +133,8 @@ def docroot():
 # ------------------------------------------------------------------------------
 @app.route('/fpga', methods=['POST'])
 def rest_fpga_post():
+    #s1 = tracemalloc.take_snapshot()       # Memory leak check
+
     # Check json
     if not request.is_json:
         abort(400)
@@ -188,6 +192,11 @@ def rest_fpga_post():
     except Exception as e:
         traceback.print_exc()
         return jsonify({"return": "failed"})
+
+    #s2 = tracemalloc.take_snapshot()           # Memory leak check
+    #diff = s2.compare_to(s1, 'lineno')
+    #for s in diff[:10]:
+    #    print(s)
 
     return jsonify({"return": "success"})
 
@@ -412,9 +421,12 @@ def rest_status_get():
 
     except:
         traceback.print_exc()
+        gc.collect()
         return jsonify({"return": "failed", "status": ST})
 
     ST['last_update'] = time.time()
+
+    gc.collect()
     return jsonify({"return": "success", "status": ST})
 
 # ------------------------------------------------------------------------------
@@ -554,6 +566,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', '--port', nargs='?', type=int, default=5000, help='port number (default: 5000)')
     args = parser.parse_args()
+
+    tracemalloc.start() # Memory trace
 
     #    fpga_startup()
     app.run(debug=True, use_reloader=True, host='0.0.0.0', port=args.port)
