@@ -31,7 +31,8 @@ app = Flask(__name__)
 # ------------------------------------------------------------------------------
 ENABLE_RUNCMD_API = True                        # If enable RUNCMD_API
 MINIMUM_UPDATE_SEC = 10                         # minimum status update period
-RUNCMD_DEFAULT_TIMEOUT = 5
+RUNCMD_DEFAULT_TIMEOUT = 20
+MAX_B64_CONFIG_SIZE = int(128*1024*1024*1.5)    # Limit maximum FPGA configuration file 128MB
 
 # ------------------------------------------------------------------------------
 # Status table
@@ -156,6 +157,10 @@ def rest_fpga_post():
 
     # Decode bitstream
     try:
+        if len(bitstream) > MAX_B64_CONFIG_SIZE:
+            # b64 string is too large
+            raise ValueError
+
         bs = base64.b64decode(bitstream)
         print("DEBUG: Recived bytes: ", len(bs))
 
@@ -172,7 +177,7 @@ def rest_fpga_post():
                 Fic.prog_sm16(data=bs, progmode=0)
                 # ST['fpga']['ifbit'] = 8    # FIX190316
 
-            elif ST['fpga']['mode'] == 'sm16pr':
+            elif ST['fpga']['mode'] == '# sm16pr':
                 Fic.prog_sm16(data=bs, progmode=1)
                 # ST['fpga']['ifbit'] = 8    # FIX190316
 
