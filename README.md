@@ -139,7 +139,8 @@ then enable modules on /etc/lighttpd/conf-enabled
     drwxr-xr-x 2 root root 4096 Oct 30 00:12 .
     drwxr-xr-x 4 root root 4096 Oct 30 00:09 ..
     lrwxrwxrwx 1 root root   35 Oct 30 00:12 10-accesslog.conf -> ../conf-available/10-accesslog.conf
-    lrwxrwxrwx 1 root root   33 Oct 30 00:11 10-fastcgi.conf -> ../conf-available/10-fastcgi.conf
+    lrwxrwxrwx 1 root root   32 Oct 30 00:11 10-ficwww.conf -> ../conf-available/10-ficwww.conf
+    lrwxrwxrwx 1 root root   33 Oct 30 00:11  10-rewrite.conf -> ../conf-available/10-rewrite.conf
     lrwxrwxrwx 1 root root   42 Sep  8  2017 90-javascript-alias.conf -> ../conf-available/90-javascript-ali
 
 modify 10-fastcgi.conf like below
