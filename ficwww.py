@@ -276,6 +276,7 @@ def rest_switch_post():
     # Configure switch
     try:
         with Opengpio():
+            Fic.write(0xfff8, n_slots << 1);    # Set maximum number of slots
             for t in table:
                 addr, sv = t
                 Fic.write(addr, sv)
