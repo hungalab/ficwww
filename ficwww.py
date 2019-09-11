@@ -83,6 +83,7 @@ ST = {
             "in0": -1, "in1": -1, "in2": -1, "in3": -1,
             "out0": -1, "out1": -1, "out2": -1, "out3": -1
         }
+        "timer":   0,
     },
 }
 
@@ -279,6 +280,7 @@ def rest_switch_post():
             Fic.write(0xfff8, n_slots << 1);    # Set maximum number of slots
             for t in table:
                 addr, sv = t
+                print('DEBUG:', addr, sv)
                 Fic.write(addr, sv)
 
     except:  # Except while GPIO open
@@ -406,6 +408,18 @@ def rest_status_get():
                         Fic.read(base_addr+3) << 24 | Fic.read(base_addr+2) << 16 | 
                         Fic.read(base_addr+1) << 8 | Fic.read(base_addr))
 
+                    # ---- Timer -----
+                    base_addr = 0xff80
+                    ST['board']['timer0'] = (
+                            Fic.read(base_addr+3) << 24 | Fic.read(base_addr+2) << 16 | 
+                            Fic.read(base_addr+1) << 8 | Fic.read(base_addr))
+
+                    base_addr = 0xff84
+                    ST['board']['timer1'] = (
+                            Fic.read(base_addr+3) << 24 | Fic.read(base_addr+2) << 16 | 
+                            Fic.read(base_addr+1) << 8 | Fic.read(base_addr))
+
+ 
                 else:
                     # If can not read out from the board, reset values.
 
@@ -424,6 +438,9 @@ def rest_status_get():
                     ST['board']['pcr']['out1'] = -1
                     ST['board']['pcr']['out2'] = -1
                     ST['board']['pcr']['out3'] = -1
+
+                    ST['board']['timer0'] = 0
+                    ST['board']['timer1'] = 0
 
     except:
         traceback.print_exc()
