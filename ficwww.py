@@ -33,6 +33,7 @@ ENABLE_RUNCMD_API = True                        # If enable RUNCMD_API
 MINIMUM_UPDATE_SEC = 10                         # minimum status update period
 RUNCMD_DEFAULT_TIMEOUT = 20
 MAX_B64_CONFIG_SIZE = int(128*1024*1024*1.5)    # Limit maximum FPGA configuration file 128MB
+TZ = datetime.timezone(datetime.timedelta(hours=+9), 'JST')  # Timezone
 
 # ------------------------------------------------------------------------------
 # Status table
@@ -192,7 +193,7 @@ def rest_fpga_post():
                 # ST['fpga']['ifbit'] = 4    # FIX190316
 
             # Set status
-            ST['fpga']['conftime'] = datetime.datetime.now()
+            ST['fpga']['conftime'] = datetime.datetime.now(TZ)
             ST['fpga']['done'] = Fic.get_done()
             ST['fpga']['memo'] = json['memo']
 
