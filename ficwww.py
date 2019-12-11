@@ -329,7 +329,7 @@ def rest_hls_post():
             with Opengpio():
                 hls_data = Fic.hls_receive(hls_data_count)  # Todo: is any 8bit I/F?
 
-            return jsonify({"return": "success", "data": hls_data})
+            return jsonify({"return": "success", "data": list(hls_data)})
 
         elif hls_cmd == 'send':
             if ST['hls']['status'] == 'stop':
