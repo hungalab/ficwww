@@ -264,19 +264,35 @@ Configuring switch table
 - JSON format
   ```
   {
-    'ports' : '<number of out ports Pn>',
-    'slots' : '<number of slots Sn>',
-    'outputs' : {
-      'port0': {
-        'slot0': '0',
-        'slot1': '0',
+    'ports' : <number of out ports Pn>,
+    'slots' : <number of slots Sn>,
+    'outputs' : <number of output>,
+    'table' : {
+      'output0': {
+        'port0': {
+          'slot0': 0,
+          'slot1': 0,
+          ...
+          'slotN': '<input port number>',
+        },
         ...
-        'slotN': '<input port number>',
+        'portN': {
+          ...,
+        },
       },
       ...
-      'portN': {
-        ...,
-      },
+      'outputN': {
+        'port0': {
+          'slot0': 0,
+          'slot1': 0,
+          ...
+          'slotN': '<input port number>',
+        },
+        ...
+        'portN': {
+          ...,
+        },
+      }
     },
   }
   ```
