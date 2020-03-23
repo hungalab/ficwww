@@ -49,7 +49,7 @@ ST = {
         "bitname": "unknown",                  # configure bitfile name
         "conftime": "----/--/-- --:--:--",     # configure time
         "memo": "",                            # memo
-        "done": False,                         # configure done via ficwww
+        "done": 0,                             # configure done via ficwww
     },
     "switch": {
         "ports": 4,
@@ -76,8 +76,8 @@ ST = {
         "status": "stop",
     },
     "board": {                                  # Board part is updated by get_status()
-        "power":   False,                       # Board power ok signal
-        "done":    False,                       # Board done signal
+        "power":   0,                           # Board power ok signal
+        "done":    0,                           # Board done signal
         "dipsw":   0,                           # DipSW status
         "led":     0,                           # LED register status
         "link":    0,                           # Aurora linkup signal
@@ -177,7 +177,7 @@ def rest_fpga_post():
     print("DEBUG: Program FPGA...")
     try:
         with Opengpio():
-            ST['fpga']['done'] = False
+            ST['fpga']['done'] = 0
 
             if ST['fpga']['mode'] == 'sm16':
                 Fic.prog_sm16(data=bs, progmode=0)
@@ -229,7 +229,7 @@ def rest_fpga_delete():
 
     ST['fpga']['bitname'] = ''
     ST['fpga']['conftime'] = ''
-    ST['fpga']['done'] = False
+    ST['fpga']['done'] = 0 
     ST['fpga']['memo'] = ''
 
     return jsonify({"return": "success"})
@@ -316,8 +316,8 @@ def rest_hls_post():
     if not request.is_json:
         abort(400)
 
-    if ST['board']['done'] == False:
-        return jsonify({"return": "failed", "error": "FPGA is not configured"})
+    #if ST['board']['done'] == False:
+    #    return jsonify({"return": "failed", "error": "FPGA is not configured"})
 
     json = request.json
     try:
@@ -373,7 +373,8 @@ def rest_status_get():
             if ST['board']['power'] == 1:       # if board power is on
                 ST['board']['done'] = Fic.get_done()
 
-                if ST['config']['use_gpio'] and ST['board']['done'] == 1:    # FPGA is configured
+#                if ST['config']['use_gpio'] and ST['board']['done'] == 1:    # FPGA is configured
+                if ST['config']['use_gpio']:
                     ST['board']['led']     = Fic.read(0xfffb)  # read LED status
                     ST['board']['dipsw']   = Fic.read(0xfffc)  # read DIPSW status
                     ST['board']['link']    = Fic.read(0xfffd)  # read Link status
@@ -474,8 +475,8 @@ def rest_regwrite():
     if not request.is_json:
         abort(400)
 
-    if ST['board']['done'] == False:
-        return jsonify({"return": "failed", "error": "FPGA is not configured"})
+    #if ST['board']['done'] == False:
+    #    return jsonify({"return": "failed", "error": "FPGA is not configured"})
 
     json = request.json
     try:
@@ -500,8 +501,8 @@ def rest_regread():
     if not request.is_json:
         abort(400)
 
-    if ST['board']['done'] == False:
-        return jsonify({"return": "failed", "error": "FPGA is not configured"})
+    #if ST['board']['done'] == 0:
+    #    return jsonify({"return": "failed", "error": "FPGA is not configured"})
 
     data = None
     json = request.json
