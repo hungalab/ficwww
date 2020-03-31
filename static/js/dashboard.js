@@ -353,6 +353,7 @@ $jq(function($){
 
 				// FPGA configuration
 				$('#bit_file_name').text(status['fpga']['bitname']);	// bitfilename
+				$('#bit_file_size').text(status['fpga']['bitsize']);	// bitfilesize
 				$('#config_time').text(status['fpga']['conftime']);		// configuration time
 
 				// Aurora link

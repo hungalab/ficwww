@@ -18,7 +18,7 @@ import tracemalloc
 import subprocess
 from subprocess import Popen
 
-from flask import Flask, render_template, jsonify, request, abort
+from flask import Flask, render_template, jsonify, request, abort, g
 #from flask_restful import Resource, Api, reqparse
 
 app = Flask(__name__)
@@ -47,7 +47,10 @@ ST = {
     "fpga": {
         "mode": "",                            # configured mode
         "bitname": "unknown",                  # configure bitfile name
+        "bitsize":  0,                         # configuration bitstream size
         "conftime": "----/--/-- --:--:--",     # configure time
+        "txtime"  : 0,                         # configuration transfer time
+        "progtime": 0,                         # FPGA programing time
         "memo": "",                            # memo
         "done": 0,                             # configure done via ficwww
     },
@@ -132,11 +135,74 @@ def docroot():
     return render_template('index.html', title=title, host=host)
 
 # ------------------------------------------------------------------------------
-# RESTful APIs
+# Before request (mostly for time mesurement purpose)
 # ------------------------------------------------------------------------------
+@app.before_request
+def before_request():
+    g.start = time.time()
 
 # ------------------------------------------------------------------------------
+# RESTful APIs
+# ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # /fpga 
+# ------------------------------------------------------------------------------
+@app.route('/fpga_prog_status', methods=['GET'])
+def rest_fpga_prog_status():
+    ps_val = Fic.prog_status()
+
+    prog_stat = {}
+
+    # FPGA prog status
+    if ps_val[0] == 0:
+        prog_stat['stat'] = 'INIT'
+
+    elif ps_val[0] == 1:
+        prog_stat['stat'] = 'PROG'
+
+    elif ps_val[0] == 2:
+        prog_stat['stat'] = 'DONE'
+
+    elif ps_val[0] == 3:
+        prog_stat['stat'] = 'FAIL'
+
+    # Smap mode
+    if ps_val[1] == 0:
+        prog_stat['smap_mode'] = 'INIT'
+
+    elif ps_val[1] == 16:
+        prog_stat['smap_mode'] = 'SM16'
+
+    elif ps_val[0] == 2:
+        prog_stat['stat'] = 'DONE'
+
+    elif ps_val[0] == 3:
+        prog_stat['stat'] = 'FAIL'
+
+    # Smap mode
+    prog_stat['smap_mode'] = ps_val[1]
+
+    # Prog mode
+    if ps_val[2] == 0:
+        prog_stat['smap_mode'] = 'NORM'
+
+    elif ps_val[2] == 1:
+        prog_stat['smap_mode'] = 'PR'
+
+    # Prog start time (Unix epoch)
+    prog_stat['prog_st_time'] = ps_val[3]
+    prog_stat['prog_ed_time'] = ps_val[4]
+
+
+    # Program size (Configuration size)
+    prog_stat['prog_size'] = ps_val[5]
+
+    # Transfered size (Progress)
+    prog_stat['tx_size'] = ps_val[6]
+
+    print(prog_stat)
+    return jsonify({"return": "success", "status": prog_stat})
+
 # ------------------------------------------------------------------------------
 @app.route('/fpga', methods=['POST'])
 def rest_fpga_post():
@@ -152,6 +218,7 @@ def rest_fpga_post():
         ST['fpga']['mode'] = json['mode']
         ST['fpga']['bitname'] = json['bitname']
         bitstream = json['bitstream']
+        ST['fpga']['txtime'] = time.time() - g.start   # Configuration transfer time (request time)
 
     except Exception as e:
         traceback.print_exc()
@@ -183,7 +250,7 @@ def rest_fpga_post():
                 Fic.prog_sm16(data=bs, progmode=0)
                 # ST['fpga']['ifbit'] = 8    # FIX190316
 
-            elif ST['fpga']['mode'] == '# sm16pr':
+            elif ST['fpga']['mode'] == 'sm16pr':
                 Fic.prog_sm16(data=bs, progmode=1)
                 # ST['fpga']['ifbit'] = 8    # FIX190316
 
@@ -199,6 +266,10 @@ def rest_fpga_post():
             ST['fpga']['conftime'] = datetime.datetime.now(TZ)
             ST['fpga']['done'] = Fic.get_done()
             ST['fpga']['memo'] = json['memo']
+
+            ps_val = Fic.prog_status()
+            ST['fpga']['progtime'] = ps_val[4] - ps_val[3]
+            ST['fpga']['bitsize']  = ps_val[5]
 
     except Exception as e:
         traceback.print_exc()
