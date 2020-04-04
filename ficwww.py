@@ -296,6 +296,9 @@ def rest_fpga_get():
 @app.route('/fpga', methods=['DELETE'])
 def rest_fpga_delete():
     try:
+        if os.path.exists(u'/tmp/gpio.lock'):
+            os.remove(u'/tmp/gpio.lock');   # Reset overrides GPIO lock
+
         with Opengpio():
             Fic.prog_init()
 
