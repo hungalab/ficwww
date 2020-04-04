@@ -14,6 +14,7 @@ import argparse
 import traceback
 import gc
 import tracemalloc
+import gzip
 
 import subprocess
 from subprocess import Popen
@@ -240,6 +241,10 @@ def rest_fpga_post():
     except Exception as e:
         traceback.print_exc()
         return jsonify({"return": "failed"})
+
+    # Check compress mode is on
+    if 'compress' in json and json['compress'] == True:
+        bs = gzip.decompress(bs)
 
     print("DEBUG: Program FPGA...")
     try:
