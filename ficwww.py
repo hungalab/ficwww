@@ -30,17 +30,18 @@ app = Flask(__name__)
 # ------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------
-ENABLE_RUNCMD_API = True                        # If enable RUNCMD_API
-MINIMUM_UPDATE_SEC = 10                         # minimum status update period
+ENABLE_RUNCMD_API      = True                       # If enable RUNCMD_API
+MINIMUM_UPDATE_SEC     = 20                         # minimum status update period
 RUNCMD_DEFAULT_TIMEOUT = 20
-MAX_B64_CONFIG_SIZE = int(128*1024*1024*1.5)    # Limit maximum FPGA configuration file 128MB
+MAX_B64_CONFIG_SIZE = int(128*1024*1024*1.5)        # Limit maximum FPGA configuration file 128MB
 TZ = datetime.timezone(datetime.timedelta(hours=+9), 'JST')  # Timezone
 
 # ------------------------------------------------------------------------------
 # Status table
 # ------------------------------------------------------------------------------
 ST = {
-    "last_update": 0,                          # last update ts
+    "last_update": 0,                           # last update ts
+    "last_status": False,                       # last update status
     "config": {                                 # ficwww config
         "auto_reflesh": False,                  # Auto reflesh mode
         "use_gpio": True,                       # use GPIO
@@ -269,8 +270,8 @@ def rest_fpga_post():
 
             # Set status
             ST['fpga']['conftime'] = datetime.datetime.now(TZ)
-            ST['fpga']['done'] = Fic.get_done()
             ST['fpga']['memo'] = json['memo']
+            ST['fpga']['done'] = 1
 
             ps_val = Fic.prog_status()
             ST['fpga']['progtime'] = ps_val[4] - ps_val[3]
@@ -443,9 +444,19 @@ def rest_hls_post():
 #-------------------------------------------------------------------------------
 @app.route('/status', methods=['GET'])
 def rest_status_get():
-    if (time.time() - ST['last_update']) <= MINIMUM_UPDATE_SEC:
-        return jsonify({"return": "success", "status": ST})
-    
+
+    # Status update condition
+    update_period = time.time() - ST['last_update']
+
+    # If fpga not configured via ficwww and update_period is less than MIN_UPDATE_SEC * 3 -> return cache
+    if (ST['last_status'] == False or ST['fpga']['done'] == 0) and update_period <= (MINIMUM_UPDATE_SEC * 3):
+        return jsonify({"return": "success", "status": ST, "source": "cache"})     # Return cached status
+
+    # If fpga configured via ficwww and update_period is less than MIN_UPDATE_SEC -> return cache
+    # If last_status was true and update_period is less than MIN_UPDATE_SEC -> return cache
+    if (ST['last_status'] == True or ST['fpga']['done'] == 1) and update_period <= MINIMUM_UPDATE_SEC:
+        return jsonify({"return": "success", "status": ST, "source": "cache"})     # Return cached status
+
     try:
         with Opengpio():
             ST['board']['power'] = Fic.get_power()
@@ -512,6 +523,7 @@ def rest_status_get():
                             Fic.read(base_addr+3) << 24 | Fic.read(base_addr+2) << 16 | 
                             Fic.read(base_addr+1) << 8 | Fic.read(base_addr))
 
+                    ST['last_status'] = True
  
                 else:
                     # If can not read out from the board, reset values.
@@ -536,14 +548,40 @@ def rest_status_get():
                     ST['board']['timer1'] = 0
 
     except:
+        # If can not read out from the board, reset values.
+
+        ST['board']['led'] = 0
+        ST['board']['dipsw'] = 0
+        ST['board']['link'] = 0
+        ST['board']['id'] = -1
+        ST['board']['channel'] = 0x10000
+
+        # ---- Packet counter ----
+        ST['board']['pcr']['in0']  = -1
+        ST['board']['pcr']['in1']  = -1
+        ST['board']['pcr']['in2']  = -1
+        ST['board']['pcr']['in3']  = -1
+        ST['board']['pcr']['out0'] = -1
+        ST['board']['pcr']['out1'] = -1
+        ST['board']['pcr']['out2'] = -1
+        ST['board']['pcr']['out3'] = -1
+
+        ST['board']['timer0'] = 0
+        ST['board']['timer1'] = 0
+
         traceback.print_exc()
         gc.collect()
-        return jsonify({"return": "failed", "status": ST})
+
+        ST['last_update'] = time.time()
+        ST['last_status'] = False
+
+        #return jsonify({"return": "failed", "status": ST})
+        return jsonify({"return": "success", "status": ST, "source": "cache"})     # Return cached status
 
     ST['last_update'] = time.time()
 
     gc.collect()
-    return jsonify({"return": "success", "status": ST})
+    return jsonify({"return": "success", "status": ST, "source": "realtime"})
 
 # ------------------------------------------------------------------------------
 # /regwrite
