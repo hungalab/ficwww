@@ -274,7 +274,7 @@ def rest_fpga_post():
             ST['fpga']['done'] = 1
 
             ps_val = Fic.prog_status()
-            ST['fpga']['progtime'] = ps_val[4] - ps_val[3]
+            ST['fpga']['progtime'] = (ps_val[4] - ps_val[3]) / 1000000  # div by CLOCKS_PER_SEC
             ST['fpga']['bitsize']  = ps_val[5]
 
     except Exception as e:
