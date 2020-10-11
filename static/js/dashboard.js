@@ -317,6 +317,89 @@ $jq(function($){
 	});
 
 	//----------------------------------------------------------------------------
+	// obtain xvcd status
+	//----------------------------------------------------------------------------
+	function get_xvcd_status() {
+		$.ajax({
+			url         : 'xvcd',
+			type        : 'get',
+			cache       : false,
+			dataType    : 'json',
+			timeout     : 50000
+		})
+		.done(function(data, textStatus, jqXHR){
+			console.log(data);
+			if (data['return'] == 'success') {
+				$('#led_jtag_cable').addClass('led_green_on');
+				$('#led_xvcd').addClass('led_green_on');
+				$('#xvcd_status').text('xvcd is running');
+
+			} else {
+				if(data['error_code'] == 'cable_not_found') {
+					$('#led_jtag_cable').removeClass('led_green_on');
+					$('#led_xvcd').removeClass('led_green_on');
+
+				} else if (data['error_code'] == 'xvcd_not_running') {
+					$('#led_jtag_cable').addClass('led_green_on');
+					$('#led_xvcd').removeClass('led_green_on');
+				}
+
+				$('#xvcd_status').text(data['error']);
+			}
+		})
+		.fail(function(jqXHR, textStatus, errorThrown){
+			//alert("Ajax Error")
+			console.log('ajax error at get xvcd status');
+		});
+
+	}
+
+	$('#btn_start_xvcd').on('click', function() {
+		var json = {
+			"command" : "start",
+		};
+
+		$.ajax({
+			url         : 'xvcd',
+			type        : 'post',
+			cache       : false,
+			contentType : 'application/json',
+			dataType    : 'json',
+			data        : JSON.stringify(json),
+		})
+		.done(function(form_data, textStatus, jqXHR){
+			console.log(form_data);
+			get_xvcd_status();
+		})
+		.fail(function(jqXHR, textStatus, errorThrown){
+			alert('AJAX failed');
+		});
+	});
+
+	$('#btn_stop_xvcd').on('click', function() {
+		var json = {
+			"command" : "stop",
+		};
+
+		$.ajax({
+			url         : 'xvcd',
+			type        : 'post',
+			cache       : false,
+			contentType : 'application/json',
+			dataType    : 'json',
+			data        : JSON.stringify(json),
+		})
+		.done(function(form_data, textStatus, jqXHR){
+			console.log(form_data);
+			get_xvcd_status();
+		})
+		.fail(function(jqXHR, textStatus, errorThrown){
+			alert('AJAX failed');
+		});
+	});
+
+
+	//----------------------------------------------------------------------------
 	// obtain board status
 	//----------------------------------------------------------------------------
 	function get_status() {
@@ -428,6 +511,8 @@ $jq(function($){
 			//alert("Ajax Error")
 			console.log('ajax error at get_status');
 		});
+
+		get_xvcd_status();
 	}
 
 	//----------------------------------------------------------------------------

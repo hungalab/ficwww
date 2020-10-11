@@ -31,10 +31,20 @@ app = Flask(__name__)
 
 # ------------------------------------------------------------------------------
 ENABLE_RUNCMD_API      = True                       # If enable RUNCMD_API
+
 MINIMUM_UPDATE_SEC     = 20                         # minimum status update period
+
 RUNCMD_DEFAULT_TIMEOUT = 20
 MAX_B64_CONFIG_SIZE = int(128*1024*1024*1.5)        # Limit maximum FPGA configuration file 128MB
 TZ = datetime.timezone(datetime.timedelta(hours=+9), 'JST')  # Timezone
+
+# ------------------------------------------------------------------------------
+# Settings for XVCD
+# ------------------------------------------------------------------------------
+XVCD_START_CMD         = '/opt/xvcd/bin/xvcd -V 0x0403 -P 0x6014'
+XVCD_STOP_CMD          = 'killall xvcd'
+XVCD_CHECK_CMD         = 'pgrep xvcd'
+XVCD_CHECK_CABLE_CMD   = 'lsusb -d 0403:6014'
 
 # ------------------------------------------------------------------------------
 # Status table
@@ -714,6 +724,118 @@ def rest_conf():
         return jsonify({"return": "failed"})
 
     return jsonify({"return": "success"})
+
+#-------------------------------------------------------------------------------
+# /xvcd status check
+#-------------------------------------------------------------------------------
+@app.route('/xvcd', methods=['GET'])
+def rest_xvcd_check():
+
+    ret = {
+        "return": "success",
+        "reason": ""
+    }
+
+    # Get timeout from json. Default value is 5 sec
+    timeout = RUNCMD_DEFAULT_TIMEOUT
+
+    try:
+        # Check cable
+        proc = Popen(XVCD_CHECK_CABLE_CMD, shell=True, stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    preexec_fn=os.setsid)
+        sout, serr = proc.communicate(timeout=timeout)
+
+        if sout.decode() == "":
+            return jsonify({"return": "failed",
+                            "error_code": "cable_not_found",
+                            "error": "Cable not found"})
+
+        # Check xvcd daemon
+        proc = Popen(XVCD_CHECK_CMD, shell=True, stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    preexec_fn=os.setsid)
+        sout, serr = proc.communicate(timeout=timeout)
+
+        if sout.decode() == "":
+            return jsonify({"return": "failed",
+                            "error_code": "xvcd_not_running",
+                            "error": "xvcd not running"})
+
+    except subprocess.TimeoutExpired as e:
+        #proc.terminate()    # Terminate timeout process tree
+        os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+
+        return jsonify({"return": "failed", 
+                        "error": "called process timeout happened (force KILLED)"})
+
+    except subprocess.CalledProcessError as e:
+        return jsonify({"return": "failed", 
+                        "error": "called process returned non zero"})
+
+    except Exception:
+        traceback.print_exc()
+        return jsonify({"return": "failed", 
+                        "error": "something nasty happened:\n{0:s}".format(traceback.format_exc())})
+
+
+    return jsonify({"return": "success",
+                    "error": ""})
+
+#-------------------------------------------------------------------------------
+# /xvcd start stop
+#-------------------------------------------------------------------------------
+@app.route('/xvcd', methods=['POST'])
+def rest_xvcd_start_stop():
+    # Check json
+    if not request.is_json:
+        abort(400)
+
+    json = request.json
+    try:
+        # Get cmd from json
+        cmd = json['command']
+
+        # Get timeout from json. Default value is 5 sec
+        timeout = RUNCMD_DEFAULT_TIMEOUT
+
+        # Start xvcd
+        if cmd == "start":
+            proc = Popen(XVCD_START_CMD, shell=True, stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        preexec_fn=os.setsid)
+
+        if cmd == "stop":
+            proc = Popen(XVCD_STOP_CMD, shell=True, stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        preexec_fn=os.setsid)
+
+            sout, serr = proc.communicate(timeout=timeout)
+
+    except subprocess.TimeoutExpired as e:
+        #proc.terminate()    # Terminate timeout process tree
+        os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+        return jsonify({"return": "failed", 
+                        "stdout": e.stdout, 
+                        "stderr": e.stderr, 
+                        "error": "Called process timeout happened (Force KILLED)"})
+
+    except subprocess.CalledProcessError as e:
+        return jsonify({"return": "failed", 
+                        "stdout": e.stdout, 
+                        "stderr": e.stderr, 
+                        "error": "Called process returned non zero"})
+
+    except Exception:
+        traceback.print_exc()
+        return jsonify({"return": "failed", 
+                        "stdout": "", 
+                        "stderr": "", 
+                        "error": "Something nasty happened:\n{0:s}".format(traceback.format_exc())
+                        })
+
+    return jsonify({"return": "success",
+                    "error": ""})
 
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
