@@ -364,7 +364,7 @@ def rest_switch_post():
                         raise KeyError('slot {0:s} is not found'.format(sout_key))
 
                     addr_lo = sout
-                    addr = (addr_hi << 8 | addr_lo)
+                    addr = (addr_hi << 8 | on << 6 | addr_lo)
                     tbl_tmp.append((addr, _table[nout_key][pout_key][sout_key]))    # Set to internal table
 
         # Set onmemory internal table (for reference cache)
