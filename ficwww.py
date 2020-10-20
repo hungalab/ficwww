@@ -414,11 +414,13 @@ def rest_hls_post():
         hls_cmd = json['command']
         if hls_cmd == 'start':
             with Opengpio():
+                Fic.comm_reset();
                 Fic.hls_start()
                 ST['hls']['status'] = 'start'
 
         elif hls_cmd == 'reset':
             with Opengpio():
+                Fic.comm_reset();
                 Fic.hls_reset()
                 ST['hls']['status'] = 'stop'
 
@@ -448,6 +450,79 @@ def rest_hls_post():
         return jsonify({"return": "failed"})
 
     return jsonify({"return": "success"})
+
+# ------------------------------------------------------------------------------
+@app.route('/hls_ddr', methods=['POST'])
+def rest_hls_ddr():
+    #s1 = tracemalloc.take_snapshot()       # Memory leak check
+
+    # Check json
+    if not request.is_json:
+        abort(400)
+
+    json = request.json
+
+    try:
+        cmd  = json['command']
+        addr = int(json['address'])
+
+        if cmd == "write":
+            b64 = json['data']
+
+        if cmd == "read":
+            size = int(json['size'])
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"return": "failed"})
+
+    # Check HLS status
+    #if ST['hls']['status'] == 'stop':
+    #    return jsonify({"return": "failed", "error": "HLS is not running yet"})
+
+    # Process command
+    if cmd == 'write':
+        try:
+            if len(b64) > MAX_B64_CONFIG_SIZE:
+                return jsonify({"return": "failed", "error": "Data is too large for single time"})
+            bs = base64.b64decode(b64)
+
+        except Exception as e:
+            traceback.print_exc()
+            return jsonify({"return": "failed"})
+
+        # Check compress mode is on
+        if 'compress' in json and json['compress'] == True:
+            bs = gzip.decompress(bs)
+
+        try:
+            with Opengpio():
+                Fic.ddr_write(bs, addr)
+
+        except Exception as e:
+            traceback.print_exc()
+            return jsonify({"return": "failed"})
+
+        return jsonify({"return": "success"})
+
+    elif cmd == 'read':
+        try:
+            with Opengpio():
+                bs = Fic.ddr_read(size, addr)
+
+        except Exception as e:
+            traceback.print_exc()
+            return jsonify({"return": "failed"})
+
+        # Check compress mode is on
+        if 'compress' in json and json['compress'] == True:
+            bs = gzip.compress(bs)
+
+        b64 = base64.b64encode(bs)
+
+        return jsonify({"return": "success", "data": b64.decode('utf-8')})
+
+    return jsonify({"return": "failed", "error": "Invalid command"})    # Invalid command
 
 #-------------------------------------------------------------------------------
 # /status
@@ -801,9 +876,16 @@ def rest_xvcd_start_stop():
 
         # Start xvcd
         if cmd == "start":
-            proc = Popen(XVCD_START_CMD, shell=True, stdout=subprocess.PIPE,
+            # Check xvcd daemon
+            proc = Popen(XVCD_CHECK_CMD, shell=True, stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE,
                         preexec_fn=os.setsid)
+            sout, serr = proc.communicate(timeout=timeout)
+
+            if sout.decode() == "":
+                proc = Popen(XVCD_START_CMD, shell=True, stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            preexec_fn=os.setsid)
 
         if cmd == "stop":
             proc = Popen(XVCD_STOP_CMD, shell=True, stdout=subprocess.PIPE,
