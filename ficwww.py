@@ -69,9 +69,9 @@ ST = {
     "switch": {
         "ports": 4,
         "slots": 1,
-        "outputs": 1,
+        "switches": 1,
         "table" : {
-            "output0": {
+            "switch0": {
                 "port0": {
                     "slot0": 0,
                 },
@@ -337,40 +337,40 @@ def rest_switch_post():
 
     n_ports = 0
     n_slots = 0
-    n_outputs = 0
+    n_switches = 0
     tbl_tmp = []
 
     try:
         n_ports   = int(json['ports'])
         n_slots   = int(json['slots'])
-        n_outputs = int(json['outputs'])
+        n_switches = int(json['switches'])
         _table    = json['table']
 
         # Parse table
-        for on in range(n_outputs):
-            nout_key = 'output{0:d}'.format(on)
-            if nout_key not in _table:
-                raise KeyError('output {0:s} is not found'.format(nout_key))
+        for sw in range(n_switches):
+            nsw_key = 'switch{0:d}'.format(sw)
+            if nsw_key not in _table:
+                raise KeyError('switch {0:s} is not found'.format(nsw_key))
 
             for pn in range(n_ports):
                 pout_key = 'port{0:d}'.format(pn)
-                if pout_key not in _table[nout_key]:
+                if pout_key not in _table[nsw_key]:
                     raise KeyError('port {0:s} is not found'.format(pout_key))
 
                 addr_hi = pn 
                 for sout in range(n_slots):
                     sout_key = 'slot{0:d}'.format(sout)
-                    if sout_key not in _table[nout_key][pout_key]:
+                    if sout_key not in _table[nsw_key][pout_key]:
                         raise KeyError('slot {0:s} is not found'.format(sout_key))
 
                     addr_lo = sout
-                    addr = (addr_hi << 8 | on << 6 | addr_lo)
-                    tbl_tmp.append((addr, _table[nout_key][pout_key][sout_key]))    # Set to internal table
+                    addr = (addr_hi << 8 | sw << 6 | addr_lo)
+                    tbl_tmp.append((addr, _table[nsw_key][pout_key][sout_key]))    # Set to internal table
 
         # Set onmemory internal table (for reference cache)
         ST['switch']['ports']   = n_ports
         ST['switch']['slots']   = n_slots
-        ST['switch']['outputs'] = n_outputs
+        ST['switch']['switches'] = n_switches
         ST['switch']['table']   = tbl_tmp
 
     except Exception as e:

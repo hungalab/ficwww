@@ -266,9 +266,9 @@ Configuring switch table
   {
     'ports' : <number of out ports Pn>,
     'slots' : <number of slots Sn>,
-    'outputs' : <number of output>,
+    'switches' : <number of switches>,
     'table' : {
-      'output0': {
+      'switch0': {
         'port0': {
           'slot0': 0,
           'slot1': 0,
@@ -281,7 +281,7 @@ Configuring switch table
         },
       },
       ...
-      'outputN': {
+      'switchN': {
         'port0': {
           'slot0': 0,
           'slot1': 0,
